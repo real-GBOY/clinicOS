@@ -1,0 +1,159 @@
+/* Patient portal (prototype "Patient Portal"). */
+.co-portal {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--careos-background);
+}
+.co-portal-frame .co-portal {
+    min-height: calc(100vh - 110px);
+    border: 1px solid var(--careos-border);
+    border-radius: var(--careos-radius-lg);
+    overflow: hidden;
+}
+.co-portal__header {
+    height: 56px;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--careos-border);
+    background: var(--careos-surface);
+    display: flex;
+    align-items: center;
+    padding: 0 22px;
+    gap: 10px;
+}
+.co-portal__product {
+    font-size: 10.5px;
+    color: var(--careos-text-secondary);
+    margin-top: 1px;
+}
+.co-portal__spacer {
+    flex: 1;
+}
+.co-portal__name {
+    font-size: 12.5px;
+    color: var(--careos-text-secondary);
+}
+.co-portal__body {
+    flex: 1;
+    display: flex;
+    min-height: 0;
+}
+.co-portal__nav {
+    width: 190px;
+    flex-shrink: 0;
+    background: var(--careos-surface);
+    border-right: 1px solid var(--careos-border);
+    padding: 14px 10px;
+}
+.co-portal__nav-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 9px 10px;
+    border-radius: var(--careos-radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-bottom: 2px;
+    border: none;
+    background: none;
+    color: oklch(35% 0.01 240);
+}
+.co-portal__nav-item--active {
+    background: var(--careos-primary-soft);
+    color: var(--careos-primary-soft-text);
+}
+.co-portal__content {
+    flex: 1;
+    overflow: auto;
+    padding: 24px 28px;
+    min-width: 0;
+}
+.co-portal__title {
+    font-size: 19px;
+    font-weight: 700;
+    margin: 0 0 14px;
+}
+.co-portal__next {
+    border-radius: var(--careos-radius-lg);
+    padding: 18px;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.co-portal__next-when {
+    font-size: 16px;
+    font-weight: 700;
+    margin-top: 3px;
+}
+.co-portal__tiles {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+.co-portal__tile {
+    padding: 14px;
+    text-align: left;
+    cursor: pointer;
+    font: inherit;
+    display: flex;
+    flex-direction: column;
+}
+.co-portal__tile-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--careos-text-secondary);
+}
+.co-portal__tile-value {
+    font-size: 22px;
+    font-weight: 700;
+    margin-top: 4px;
+    color: var(--careos-text);
+}
+.co-portal__tile-value--warning { color: var(--careos-warning-soft-text); }
+.co-portal__tile-value--danger { color: var(--careos-danger-soft-text); }
+.co-portal__row,
+.co-portal__lab {
+    padding: 14px 16px;
+    margin-bottom: 10px;
+}
+.co-portal__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+.co-portal__slots {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+@media (max-width: 700px) {
+    .co-portal__body {
+        flex-direction: column;
+    }
+    .co-portal__nav {
+        width: auto;
+        display: flex;
+        overflow-x: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--careos-border);
+        padding: 8px;
+    }
+    .co-portal__nav-item {
+        white-space: nowrap;
+        width: auto;
+    }
+    .co-portal__tiles {
+        grid-template-columns: 1fr;
+    }
+    .co-portal__content {
+        padding: 16px;
+    }
+    .co-portal__name {
+        display: none;
+    }
+}

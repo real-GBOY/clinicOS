@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portal_page" name="CareOS Patient Portal">
+        <t t-call="web.frontend_layout">
+            <t t-set="head">
+                <title>CareOS · Patient Portal</title>
+            </t>
+            <owl-component name="careos_portal.PortalPage"/>
+        </t>
+    </template>
+</odoo>

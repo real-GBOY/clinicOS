@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_portal.Badge">
+        <span t-attf-class="co-badge co-badge--{{tone}}" t-esc="label"/>
+    </t>
+
+    <t t-name="careos_portal.PortalApp">
+        <div class="careos co-portal">
+            <header class="co-portal__header">
+                <div>
+                    <div class="co-wordmark" style="font-size: 15px">care<span class="co-wordmark__os">os</span></div>
+                    <div class="co-portal__product">Patient Portal</div>
+                </div>
+                <div class="co-portal__spacer"/>
+                <t t-if="d">
+                    <span class="co-portal__name" t-esc="d.patient.name"/>
+                    <span class="co-avatar" aria-hidden="true" t-esc="initials"/>
+                </t>
+                <button t-if="props.onExit" type="button" class="co-btn co-btn--secondary co-btn--sm" name="exit_portal"
+                        t-on-click="() => props.onExit()">Switch to staff view</button>
+                <a t-else="" href="/web/session/logout" class="co-btn co-btn--secondary co-btn--sm">Log out</a>
+            </header>
+            <div t-if="state.error" class="co-portal__content"><div class="co-alert co-alert--danger" t-esc="state.error"/></div>
+            <div t-elif="!d" class="co-portal__content"><div class="co-skeleton" style="height: 120px"/></div>
+            <div t-else="" class="co-portal__body">
+                <nav class="co-portal__nav" aria-label="Portal">
+                    <t t-foreach="nav" t-as="item" t-key="item[0]">
+                        <button type="button" t-attf-class="co-portal__nav-item {{state.screen === item[0] ? 'co-portal__nav-item--active' : ''}}"
+                                t-att-data-screen="item[0]" t-on-click="() => this.go(item[0])" t-esc="item[1]"/>
+                    </t>
+                </nav>
+                <main class="co-portal__content">
+                    <div t-if="readonly" class="co-alert co-alert--info mb-3">Preview of <strong t-esc="d.patient.name"/>'s portal. Actions are disabled.</div>
+                    <div t-if="state.notice" class="co-alert co-alert--success mb-3" role="status" t-esc="state.notice"/>
+
+                    <t t-if="state.screen === 'home'">
+                        <h1 class="co-portal__title">Welcome back, <t t-esc="d.patient.first_name"/></h1>
+                        <div class="co-card co-portal__next">
+                            <div t-if="d.next_appointment">
+                                <div class="co-next-appt__label">Next appointment</div>
+                                <div class="co-portal__next-when"><t t-esc="when(d.next_appointment.start)"/> · <t t-esc="d.next_appointment.provider"/></div>
+                                <div class="co-muted"><t t-esc="d.next_appointment.type"/> · <t t-esc="d.next_appointment.branch"/> · <t t-esc="d.next_appointment.state_label"/></div>
+                            </div>
+                            <div t-else="">
+                                <div class="co-next-appt__label">Next appointment</div>
+                                <div class="co-muted">Nothing booked.</div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button t-if="d.next_appointment and d.next_appointment.can_reschedule" type="button" class="co-btn co-btn--secondary co-btn--sm"
+                                        t-att-disabled="readonly" t-on-click="() => this.startReschedule(d.next_appointment)">Reschedule</button>
+                                <button type="button" class="co-btn co-btn--primary co-btn--sm" name="book_new" t-att-disabled="readonly" t-on-click="startBooking">Book new</button>
+                            </div>
+                        </div>
+                        <div class="co-portal__tiles">
+                            <button type="button" class="co-card co-portal__tile" t-on-click="() => this.go('rx')">
+                                <span class="co-portal__tile-label">Active prescriptions</span>
+                                <span class="co-portal__tile-value" t-esc="d.prescriptions.length"/>
+                            </button>
+                            <button type="button" class="co-card co-portal__tile" t-on-click="() => this.go('lab')">
+                                <span class="co-portal__tile-label">New lab results</span>
+                                <span class="co-portal__tile-value co-portal__tile-value--warning" t-esc="newLabCount"/>
+                            </button>
+                            <button type="button" class="co-card co-portal__tile" t-on-click="() => this.go('billing')">
+                                <span class="co-portal__tile-label">Balance due</span>
+                                <span t-attf-class="co-portal__tile-value {{d.balance_due ? 'co-portal__tile-value--danger' : ''}}" t-esc="money(d.balance_due)"/>
+                            </button>
+                        </div>
+                    </t>
+
+                    <t t-elif="state.screen === 'appointments'">
+                        <div class="d-flex justify-content-between align-items-baseline mb-3">
+                            <h1 class="co-portal__title mb-0">My appointments</h1>
+                            <button type="button" class="co-btn co-btn--primary co-btn--sm" t-att-disabled="readonly" t-on-click="startBooking">Book new</button>
+                        </div>
+                        <div class="co-card co-table-scroll">
+                            <table class="co-table">
+                                <thead><tr><th>Date</th><th>Doctor</th><th class="co-hide-sm">Type</th><th>Status</th><th/></tr></thead>
+                                <tbody>
+                                    <tr t-if="!d.appointments.length"><td colspan="5" class="co-muted">No appointments yet.</td></tr>
+                                    <t t-foreach="d.appointments" t-as="a" t-key="a.id">
+                                        <tr>
+                                            <td class="co-table__primary" t-esc="when(a.start)"/>
+                                            <td t-esc="a.provider"/>
+                                            <td class="co-hide-sm" t-esc="a.type"/>
+                                            <td><t t-call="careos_portal.Badge"><t t-set="label" t-value="a.state_label"/><t t-set="tone" t-value="apptTone(a)"/></t></td>
+                                            <td class="text-end">
+                                                <button t-if="a.can_reschedule" type="button" class="co-btn co-btn--ghost co-btn--sm" t-att-disabled="readonly"
+                                                        t-on-click="() => this.startReschedule(a)">Reschedule</button>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </t>
+
+                    <t t-elif="state.screen === 'rx'">
+                        <h1 class="co-portal__title">My prescriptions</h1>
+                        <div t-if="!d.prescriptions.length" class="co-muted">No active prescriptions.</div>
+                        <t t-foreach="d.prescriptions" t-as="l" t-key="l.id">
+                            <div class="co-card co-portal__row">
+                                <div>
+                                    <div class="fw-bold"><t t-esc="l.med"/> — <t t-esc="l.dose"/></div>
+                                    <div class="co-muted small"><t t-esc="l.freq"/> · <t t-esc="l.duration"/><t t-if="l.instructions"> · <t t-esc="l.instructions"/></t></div>
+                                </div>
+                                <t t-call="careos_portal.Badge"><t t-set="label" t-value="l.status"/><t t-set="tone" t-value="rxTone(l)"/></t>
+                            </div>
+                        </t>
+                    </t>
+
+                    <t t-elif="state.screen === 'lab'">
+                        <h1 class="co-portal__title">Lab results</h1>
+                        <div t-if="!d.lab_results.length" class="co-muted">No results yet. Results appear here once the laboratory has verified them.</div>
+                        <t t-foreach="d.lab_results" t-as="o" t-key="o.id">
+                            <div class="co-card co-portal__lab">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <div>
+                                        <div class="fw-bold" t-esc="o.tests"/>
+                                        <div class="co-muted small">Ordered by <t t-esc="o.doctor"/> · <t t-esc="day(o.date)"/></div>
+                                    </div>
+                                    <t t-call="careos_portal.Badge"><t t-set="label" t-value="o.is_new ? 'New' : o.status"/><t t-set="tone" t-value="o.is_new ? 'warning' : 'success'"/></t>
+                                </div>
+                                <t t-foreach="o.results" t-as="r" t-key="r.id">
+                                    <div t-attf-class="co-lab-result {{r.flag === 'high' or r.flag === 'low' ? 'co-result--high' : ''}}">
+                                        <span><t t-esc="r.name"/><span t-if="r.range" class="co-lab-result__range">ref <t t-esc="r.range"/></span></span>
+                                        <span class="co-lab-result__value"><t t-esc="r.value"/><span class="co-lab-result__unit" t-esc="r.unit"/>
+                                            <span t-if="r.flag === 'high'" class="co-lab-result__flag">High</span>
+                                            <span t-if="r.flag === 'low'" class="co-lab-result__flag">Low</span>
+                                        </span>
+                                    </div>
+                                </t>
+                            </div>
+                        </t>
+                    </t>
+
+                    <t t-elif="state.screen === 'billing'">
+                        <h1 class="co-portal__title">Billing</h1>
+                        <div t-if="!d.invoices.length" class="co-muted">No invoices.</div>
+                        <t t-foreach="d.invoices" t-as="inv" t-key="inv.id">
+                            <div class="co-card co-portal__row">
+                                <div>
+                                    <div class="fw-bold" t-esc="inv.name"/>
+                                    <div class="co-muted small">Total <t t-esc="money(inv.total)"/> · Balance due <t t-esc="money(inv.balance)"/></div>
+                                </div>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <t t-call="careos_portal.Badge"><t t-set="label" t-value="inv.status_label"/><t t-set="tone" t-value="inv.tone"/></t>
+                                    <a t-if="inv.pay_url and !readonly" t-att-href="inv.pay_url" class="co-btn co-btn--primary co-btn--sm">Pay now</a>
+                                </div>
+                            </div>
+                        </t>
+                    </t>
+
+                    <t t-elif="state.screen === 'messages'">
+                        <h1 class="co-portal__title">Messages</h1>
+                        <div class="co-card co-card--padded">
+                            <div class="co-thread__messages">
+                                <div t-if="!d.messages.length" class="co-muted">Send the clinic a message — the front desk replies here.</div>
+                                <t t-foreach="d.messages" t-as="m" t-key="m.id">
+                                    <div t-attf-class="co-bubble {{m.from_patient ? 'co-bubble--staff' : ''}}">
+                                        <div class="co-bubble__text" t-esc="m.text"/>
+                                        <div class="co-bubble__meta"><t t-if="!m.from_patient"><t t-esc="m.author"/> · </t><t t-esc="when(m.date)"/></div>
+                                    </div>
+                                </t>
+                            </div>
+                            <div class="co-thread__reply">
+                                <textarea class="co-textarea" rows="2" name="portal_message" placeholder="Message the clinic…" t-model="state.draft" t-att-disabled="readonly"/>
+                                <button type="button" class="co-btn co-btn--primary" name="portal_send" t-att-disabled="readonly or state.busy or !state.draft.trim()" t-on-click="send">Send</button>
+                            </div>
+                        </div>
+                    </t>
+                </main>
+            </div>
+
+            <div t-if="state.reschedule" class="co-modal-scrim" t-on-mousedown.self="() => this.state.reschedule = null">
+                <div class="co-modal" role="dialog" aria-label="Request a new time">
+                    <div class="co-modal__header"><div class="co-modal__title">Request a new time</div></div>
+                    <div class="co-modal__body">
+                        <p class="co-muted">Your <t t-esc="state.reschedule.appointment.type"/> on <t t-esc="when(state.reschedule.appointment.start)"/>. The clinic will offer new times in Messages.</p>
+                        <textarea class="co-textarea" name="reschedule_note" placeholder="Preferred days or times (optional)" t-model="state.reschedule.note"/>
+                    </div>
+                    <div class="co-modal__footer">
+                        <button type="button" class="co-btn co-btn--secondary" t-on-click="() => this.state.reschedule = null">Cancel</button>
+                        <button type="button" class="co-btn co-btn--primary" name="send_reschedule" t-on-click="sendReschedule">Send request</button>
+                    </div>
+                </div>
+            </div>
+
+            <div t-if="state.booking" class="co-modal-scrim" t-on-mousedown.self="() => this.state.booking = null">
+                <div class="co-modal" role="dialog" aria-label="Book an appointment">
+                    <div class="co-modal__header"><div class="co-modal__title">Book an appointment</div></div>
+                    <div class="co-modal__body co-form-grid">
+                        <label class="co-field co-field--wide">
+                            <span class="co-field__label">Doctor</span>
+                            <select class="co-select" name="portal_provider" t-on-change="onProviderChange">
+                                <t t-foreach="state.booking.options.providers" t-as="p" t-key="p.id">
+                                    <option t-att-value="p.id" t-att-selected="'' + p.id === state.booking.providerId"><t t-esc="p.name"/> · <t t-esc="p.specialty"/></option>
+                                </t>
+                            </select>
+                        </label>
+                        <label class="co-field">
+                            <span class="co-field__label">Visit type</span>
+                            <select class="co-select" name="portal_type" t-on-change="(ev) => this.state.booking.typeId = ev.target.value">
+                                <t t-foreach="state.booking.options.types" t-as="t" t-key="t.id">
+                                    <option t-att-value="t.id" t-att-selected="'' + t.id === state.booking.typeId" t-esc="t.name"/>
+                                </t>
+                            </select>
+                        </label>
+                        <label class="co-field">
+                            <span class="co-field__label">Date</span>
+                            <input type="date" class="co-input" name="portal_day" t-att-value="state.booking.day" t-on-change="changeBookingDay"/>
+                        </label>
+                        <div class="co-field co-field--wide">
+                            <span class="co-field__label">Available times</span>
+                            <div class="co-portal__slots">
+                                <div t-if="!slots.length" class="co-muted small">No free times on this day.</div>
+                                <t t-foreach="slots" t-as="slot" t-key="slot">
+                                    <button type="button" t-attf-class="co-btn co-btn--sm {{state.booking.time === slot ? 'co-btn--primary' : 'co-btn--secondary'}}"
+                                            t-att-data-slot="slot" t-on-click="() => this.state.booking.time = slot" t-esc="slot"/>
+                                </t>
+                            </div>
+                        </div>
+                        <label class="co-field co-field--wide">
+                            <span class="co-field__label">Reason (optional)</span>
+                            <input class="co-input" name="portal_reason" t-model="state.booking.reason"/>
+                        </label>
+                    </div>
+                    <div class="co-modal__footer">
+                        <button type="button" class="co-btn co-btn--secondary" t-on-click="() => this.state.booking = null">Cancel</button>
+                        <button type="button" class="co-btn co-btn--primary" name="portal_request" t-att-disabled="state.busy" t-on-click="sendBooking">Request appointment</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

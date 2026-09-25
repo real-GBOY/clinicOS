@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_portal.PortalPreview">
+        <div>
+            <t t-if="!state.patient">
+                <PageHeader title="'View as patient'" subtitle="'See the patient portal exactly as a patient sees it (read-only).'"/>
+                <div class="co-card co-card--padded" style="max-width: 520px">
+                    <label class="co-field">
+                        <span class="co-field__label">Patient</span>
+                        <RecordPicker model="'careos.patient'" name="'preview_patient'" value="state.patient"
+                                      onChange.bind="choose" placeholder="'Search by name, patient ID or phone'"/>
+                    </label>
+                </div>
+            </t>
+            <div t-else="" class="co-portal-frame">
+                <PortalApp t-key="state.key" source="source" onExit.bind="exit"/>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="careos_portal.PortalAccessCard">
+        <section class="co-p360-section" aria-label="Patient portal">
+            <div class="co-p360-section__head">
+                <div class="co-section-label">Patient portal</div>
+                <button type="button" class="co-btn co-btn--ghost co-btn--sm" name="preview_portal" t-on-click="preview">View as patient</button>
+            </div>
+            <div class="co-list-row d-flex justify-content-between align-items-center gap-2">
+                <span t-if="props.profile.portal.active" class="co-muted">Access sent — the patient can see appointments, results, invoices and messages.</span>
+                <span t-else="" class="co-muted">No portal access yet.</span>
+                <button t-if="!props.profile.portal.active and props.profile.portal.can_invite" type="button"
+                        class="co-btn co-btn--secondary co-btn--sm" name="invite_portal" t-on-click="invite">Invite to portal</button>
+            </div>
+        </section>
+    </t>
+</templates>
