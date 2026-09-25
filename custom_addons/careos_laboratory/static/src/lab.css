@@ -1,0 +1,86 @@
+/* Laboratory worklist (prototype) and result display. */
+.co-lab-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+}
+.co-row--selected td {
+    background: var(--careos-primary-soft);
+}
+.co-lab-urgent {
+    color: var(--careos-danger-soft-text);
+    font-weight: 700;
+    font-size: 10px;
+}
+.co-lab-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--careos-divider);
+    font-size: 12.5px;
+}
+.co-lab-result:last-child {
+    border-bottom: none;
+}
+.co-lab-result__range {
+    display: block;
+    font-size: 10.5px;
+    color: var(--careos-muted);
+}
+.co-lab-result__value {
+    font-weight: 700;
+    white-space: nowrap;
+}
+.co-lab-result__unit {
+    font-weight: 400;
+    color: var(--careos-text-secondary);
+    font-size: 11px;
+    margin-left: 4px;
+}
+.co-lab-result__input {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    width: 150px;
+    flex-shrink: 0;
+}
+.co-lab-result__flag {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 0 5px;
+    border-radius: 4px;
+    font-size: 10.5px;
+    background: var(--careos-danger-soft);
+    color: var(--careos-danger-soft-text);
+}
+.co-result--high .co-lab-result__value,
+.co-result--low .co-lab-result__value {
+    color: var(--careos-danger-soft-text);
+}
+.co-lab-status--warning { color: var(--careos-warning-soft-text); }
+.co-lab-status--info { color: var(--careos-primary-soft-text); }
+.co-lab-status--success { color: var(--careos-success-soft-text); }
+.co-lab-status--neutral { color: var(--careos-text-secondary); }
+.co-lab-picker {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+.co-lab-picker__item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--careos-border);
+    border-radius: var(--careos-radius-sm);
+    padding: 9px 10px;
+    font-size: 12.5px;
+    cursor: pointer;
+}
+@media (max-width: 900px) {
+    .co-lab-grid {
+        grid-template-columns: 1fr;
+    }
+}

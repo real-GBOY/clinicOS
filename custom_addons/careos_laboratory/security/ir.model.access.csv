@@ -1,0 +1,11 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_careos_lab_test_staff,careos.lab.test staff,model_careos_lab_test,careos_base.group_careos_user,1,0,0,0
+access_careos_lab_test_admin,careos.lab.test admin,model_careos_lab_test,careos_base.group_careos_admin,1,1,1,0
+access_careos_lab_test_parameter_staff,careos.lab.test.parameter staff,model_careos_lab_test_parameter,careos_base.group_careos_user,1,0,0,0
+access_careos_lab_test_parameter_admin,careos.lab.test.parameter admin,model_careos_lab_test_parameter,careos_base.group_careos_admin,1,1,1,1
+access_careos_lab_order_lab,careos.lab.order lab,model_careos_lab_order,careos_base.group_careos_lab,1,1,0,0
+access_careos_lab_order_doctor,careos.lab.order doctor,model_careos_lab_order,careos_base.group_careos_doctor,1,1,1,0
+access_careos_lab_order_nurse,careos.lab.order nurse,model_careos_lab_order,careos_base.group_careos_nurse,1,1,0,0
+access_careos_lab_result_lab,careos.lab.result lab,model_careos_lab_result,careos_base.group_careos_lab,1,1,0,0
+access_careos_lab_result_doctor,careos.lab.result doctor,model_careos_lab_result,careos_base.group_careos_doctor,1,0,0,0
+access_careos_lab_result_nurse,careos.lab.result nurse,model_careos_lab_result,careos_base.group_careos_nurse,1,0,0,0

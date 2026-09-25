@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Starter lab catalogue with adult reference ranges; clinics adjust ranges and prices. -->
+<odoo>
+    <data noupdate="1">
+        <record id="seq_careos_lab_order" model="ir.sequence">
+            <field name="name">CareOS Lab Order</field>
+            <field name="code">careos.lab.order</field>
+            <field name="prefix">LAB-</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="test_lipid" model="careos.lab.test">
+            <field name="name">Lipid Panel</field>
+            <field name="code">LIPID</field>
+            <field name="price">600</field>
+            <field name="parameter_ids" eval="[
+                (0, 0, {'sequence': 1, 'name': 'Total Cholesterol', 'unit': 'mg/dL', 'ref_low': 0, 'ref_high': 200}),
+                (0, 0, {'sequence': 2, 'name': 'LDL', 'unit': 'mg/dL', 'ref_low': 0, 'ref_high': 130}),
+                (0, 0, {'sequence': 3, 'name': 'HDL', 'unit': 'mg/dL', 'ref_low': 40, 'ref_high': 100}),
+                (0, 0, {'sequence': 4, 'name': 'Triglycerides', 'unit': 'mg/dL', 'ref_low': 0, 'ref_high': 150}),
+            ]"/>
+        </record>
+        <record id="test_cbc" model="careos.lab.test">
+            <field name="name">CBC</field>
+            <field name="code">CBC</field>
+            <field name="price">250</field>
+            <field name="parameter_ids" eval="[
+                (0, 0, {'sequence': 1, 'name': 'Hemoglobin', 'unit': 'g/dL', 'ref_low': 12, 'ref_high': 17.5}),
+                (0, 0, {'sequence': 2, 'name': 'WBC', 'unit': '10^9/L', 'ref_low': 4.5, 'ref_high': 11}),
+                (0, 0, {'sequence': 3, 'name': 'Platelets', 'unit': '10^9/L', 'ref_low': 150, 'ref_high': 450}),
+            ]"/>
+        </record>
+        <record id="test_glucose" model="careos.lab.test">
+            <field name="name">Fasting Glucose</field>
+            <field name="code">FBG</field>
+            <field name="price">80</field>
+            <field name="parameter_ids" eval="[(0, 0, {'name': 'Fasting glucose', 'unit': 'mg/dL', 'ref_low': 70, 'ref_high': 100})]"/>
+        </record>
+        <record id="test_hba1c" model="careos.lab.test">
+            <field name="name">HbA1c</field>
+            <field name="code">HBA1C</field>
+            <field name="price">300</field>
+            <field name="parameter_ids" eval="[(0, 0, {'name': 'HbA1c', 'unit': '%', 'ref_low': 4, 'ref_high': 5.6})]"/>
+        </record>
+        <record id="test_thyroid" model="careos.lab.test">
+            <field name="name">Thyroid Panel</field>
+            <field name="code">THY</field>
+            <field name="price">450</field>
+            <field name="parameter_ids" eval="[
+                (0, 0, {'sequence': 1, 'name': 'TSH', 'unit': 'mIU/L', 'ref_low': 0.4, 'ref_high': 4.0}),
+                (0, 0, {'sequence': 2, 'name': 'Free T4', 'unit': 'ng/dL', 'ref_low': 0.8, 'ref_high': 1.8}),
+            ]"/>
+        </record>
+    </data>
+</odoo>

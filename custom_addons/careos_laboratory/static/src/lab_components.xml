@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_laboratory.LabResults">
+        <div class="co-lab-results">
+            <t t-foreach="props.order.results" t-as="result" t-key="result.id">
+                <div t-attf-class="co-lab-result {{flagClass(result)}}" t-att-data-parameter="result.name">
+                    <span>
+                        <t t-esc="result.name"/>
+                        <span t-if="result.range" class="co-lab-result__range">ref <t t-esc="result.range"/></span>
+                    </span>
+                    <span t-if="props.editable" class="co-lab-result__input">
+                        <input class="co-input" type="number" step="any" t-att-name="'result_' + result.name"
+                               t-model="props.values[result.id]"/>
+                        <span class="co-lab-result__unit" t-esc="result.unit"/>
+                    </span>
+                    <span t-else="" class="co-lab-result__value">
+                        <t t-if="result.value !== ''"><t t-esc="result.value"/></t>
+                        <t t-else="">pending</t>
+                        <span class="co-lab-result__unit" t-esc="result.unit"/>
+                        <span t-if="result.flag === 'high'" class="co-lab-result__flag">H</span>
+                        <span t-if="result.flag === 'low'" class="co-lab-result__flag">L</span>
+                    </span>
+                </div>
+            </t>
+        </div>
+    </t>
+
+    <t t-name="careos_laboratory.LabOrderDialog">
+        <CareModal title="'Order lab tests'" close="props.close">
+            <div class="co-lab-picker">
+                <t t-foreach="state.tests" t-as="test" t-key="test.id">
+                    <label class="co-lab-picker__item">
+                        <input type="checkbox" t-att-name="'test_' + test.code" t-att-checked="state.selected.has(test.id)" t-on-change="() => this.toggle(test)"/>
+                        <span><t t-esc="test.name"/> <span class="co-muted" t-esc="test.code"/></span>
+                    </label>
+                </t>
+            </div>
+            <div class="co-form-grid mt-3">
+                <label class="co-field">
+                    <span class="co-field__label">Priority</span>
+                    <select class="co-select" name="priority" t-on-change="(ev) => this.state.priority = ev.target.value">
+                        <option value="routine">Routine</option>
+                        <option value="urgent">Urgent</option>
+                    </select>
+                </label>
+                <label class="co-field">
+                    <span class="co-field__label">Note for the lab</span>
+                    <input class="co-input" name="lab_note" t-model="state.note" placeholder="e.g. Fasting sample"/>
+                </label>
+            </div>
+            <div t-if="state.error" class="co-alert co-alert--danger mt-3" role="alert" t-esc="state.error"/>
+            <t t-set-slot="footer">
+                <button type="button" class="co-btn co-btn--secondary" t-on-click="() => props.close()">Cancel</button>
+                <button type="button" class="co-btn co-btn--primary" name="place_lab_order" t-att-disabled="state.saving" t-on-click="save">Place order</button>
+            </t>
+        </CareModal>
+    </t>
+
+    <t t-name="careos_laboratory.EncounterLabOrders">
+        <section t-if="props.encounter.lab_orders.length" class="co-card co-card--padded mt-3">
+            <div class="co-section-label">Lab orders</div>
+            <t t-foreach="props.encounter.lab_orders" t-as="order" t-key="order.id">
+                <div class="co-rx-block">
+                    <div class="d-flex justify-content-between align-items-center gap-2 mb-1">
+                        <button type="button" class="co-link-button fw-semibold" t-on-click="() => this.open(order)"><t t-esc="order.name"/> · <t t-esc="order.tests"/></button>
+                        <Badge label="order.state_label" tone="tone(order)"/>
+                    </div>
+                    <LabResults t-if="['result_entered', 'verified', 'completed'].includes(order.state)" order="order"/>
+                </div>
+            </t>
+        </section>
+    </t>
+
+    <t t-name="careos_laboratory.LabWorklist">
+        <div>
+            <PageHeader title="'Laboratory Worklist'" subtitle="'Orders at this branch'">
+                <t t-set-slot="actions">
+                    <div class="co-segmented" role="group" aria-label="Scope">
+                        <button type="button" t-attf-class="co-segmented__item {{state.scope === 'active' ? 'co-segmented__item--active' : ''}}" t-on-click="() => this.setScope('active')">Active</button>
+                        <button type="button" t-attf-class="co-segmented__item {{state.scope === 'completed' ? 'co-segmented__item--active' : ''}}" t-on-click="() => this.setScope('completed')">Completed</button>
+                    </div>
+                </t>
+            </PageHeader>
+            <div t-if="state.error" class="co-card"><EmptyState title="'Worklist unavailable'" body="state.error" error="true"/></div>
+            <LoadingState t-elif="!state.rows" rows="5"/>
+            <div t-else="" class="co-lab-grid">
+                <div class="co-card co-table-scroll">
+                    <EmptyState t-if="!state.rows.length" title="'No orders'" body="'Lab orders placed by doctors appear here.'"/>
+                    <table t-else="" class="co-table co-table--interactive">
+                        <thead><tr><th>Order</th><th>Patient</th><th>Test</th><th class="co-hide-md">Doctor</th><th>Status</th></tr></thead>
+                        <tbody>
+                            <t t-foreach="state.rows" t-as="order" t-key="order.id">
+                                <tr t-attf-class="{{state.selected and state.selected.id === order.id ? 'co-row--selected' : ''}}"
+                                    t-on-click="() => this.select(order.id)" tabindex="0" t-att-data-order="order.name">
+                                    <td class="co-table__sub"><t t-esc="order.name"/><span t-if="order.priority === 'urgent'" class="co-lab-urgent"> URGENT</span></td>
+                                    <td class="co-table__primary" t-esc="order.patient.name"/>
+                                    <td t-esc="order.tests"/>
+                                    <td class="co-hide-md" t-esc="order.provider.name"/>
+                                    <td><Badge label="order.state_label" tone="tone(order)"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+                <div t-if="state.selected" class="co-card co-card--padded co-lab-detail">
+                    <div class="fw-bold"><t t-esc="state.selected.name"/> · <button type="button" class="co-link-button" t-on-click="openPatient" t-esc="state.selected.patient.name"/></div>
+                    <div class="co-muted small mb-2"><t t-esc="state.selected.tests"/> · ordered by <t t-esc="state.selected.provider.name"/> · <t t-esc="date(state.selected)"/></div>
+                    <div t-if="state.selected.clinical_note" class="co-alert co-alert--info mb-2" t-esc="state.selected.clinical_note"/>
+                    <div class="mb-2"><Badge label="state.selected.state_label" tone="tone(state.selected)"/></div>
+                    <LabResults order="state.selected" editable="state.selected.can_enter_results" values="state.values"/>
+                    <div class="d-flex flex-column gap-2 mt-3">
+                        <t t-if="state.selected.can_enter_results">
+                            <button type="button" class="co-btn co-btn--secondary" name="save_results" t-att-disabled="state.busy" t-on-click="saveResults">Save draft</button>
+                            <button type="button" class="co-btn co-btn--primary" name="submit_results" t-att-disabled="state.busy" t-on-click="submitResults">Release results</button>
+                        </t>
+                        <t t-foreach="actions" t-as="action" t-key="action.key">
+                            <button type="button" t-attf-class="co-btn co-btn--{{action.style}}" t-att-name="'lab_' + action.key"
+                                    t-att-disabled="state.busy" t-on-click="() => this.run(action.key)" t-esc="action.label"/>
+                        </t>
+                        <div t-if="state.selected.verified_by" class="co-muted small">Verified by <t t-esc="state.selected.verified_by"/></div>
+                        <div t-if="state.selected.reviewed_by" class="co-muted small">Reviewed by <t t-esc="state.selected.reviewed_by"/></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="careos_laboratory.PendingLabPanel">
+        <section class="co-card co-card--padded">
+            <div class="co-card__title">Pending lab results</div>
+            <div t-if="!orders.length" class="co-muted co-list-row">No pending results.</div>
+            <t t-foreach="orders" t-as="order" t-key="order.id">
+                <button type="button" class="co-list-row co-row-button d-flex justify-content-between gap-2" t-on-click="() => this.open(order)">
+                    <span><t t-esc="order.patient.name"/> · <t t-esc="order.tests"/></span>
+                    <span t-attf-class="fw-semibold {{color(order)}}" t-esc="order.state_label"/>
+                </button>
+            </t>
+        </section>
+    </t>
+
+    <t t-name="careos_laboratory.PatientLab">
+        <div>
+            <EmptyState t-if="state.error" title="'Lab results unavailable'" body="state.error" error="true"/>
+            <LoadingState t-elif="!state.orders" rows="3"/>
+            <EmptyState t-elif="!state.orders.length" title="'No lab orders'" body="'Tests ordered for this patient appear here.'"/>
+            <t t-else="">
+                <t t-foreach="state.orders" t-as="order" t-key="order.id">
+                    <div class="co-rx-block">
+                        <div class="d-flex justify-content-between align-items-center gap-2 mb-1">
+                            <span><strong t-esc="order.tests"/> <span class="co-muted">· <t t-esc="date(order)"/> · <t t-esc="order.provider.name"/></span></span>
+                            <Badge label="order.state_label" tone="tone(order)"/>
+                        </div>
+                        <LabResults t-if="order.results" order="order"/>
+                    </div>
+                </t>
+            </t>
+        </div>
+    </t>
+</templates>

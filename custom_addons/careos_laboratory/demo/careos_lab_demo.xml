@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <function model="careos.lab.order" name="_careos_demo_lab"/>
+</odoo>
