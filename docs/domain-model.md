@@ -94,10 +94,44 @@ Spec §6: Waiting → Called → In Consultation → Completed · Waiting → No
   mirrors them through `_careos_after_transition`, so appointment and ticket can never disagree.
 * Starting straight from Waiting (a doctor fetches the patient) records an implicit call.
 
-## Planned
+## Clinical (careos_clinical)
 
-| Entity | States |
-|---|---|
-| Prescription | Draft → Issued → Dispensed → Completed · Issued → Cancelled |
-| Lab order | Ordered → Sample Collected → Processing → Result Entered → Verified → Completed |
-| Invoice | Native `account.move`: Draft → Posted → Partially Paid → Paid · Posted → Refunded |
+`careos.encounter`: one per appointment, opened by check-in (Open -> Done). Vitals (range-checked, BMI
+computed), chief complaint, notes, plan, follow-up date. Nurses may write vitals only. Sign-off
+(`action_complete`) requires a diagnosis and completes the appointment. `careos.diagnosis`: doctor-only,
+locked when the encounter is done.
+
+## Prescriptions (careos_prescriptions)
+
+```
+Draft --issue--> Issued --dispense--> Dispensed --(course ends, cron)--> Completed
+Draft, Issued --cancel--> Cancelled
+```
+
+Issuing warns about allergy matches and notifies pharmacists. Dispensing consumes stock through
+`careos.inventory._careos_consume` (validated picking, FEFO lots); insufficient stock blocks it.
+
+## Laboratory (careos_laboratory)
+
+```
+Ordered --collect--> Sample Collected --process--> Processing --enter_results--> Result Entered
+  --verify--> Verified --review (doctor)--> Completed
+```
+
+`careos.lab.test` is the catalogue (auto-created tax-free service product) with parameters and reference
+ranges; `careos.lab.result` flags (low / high / normal) are computed. Only verified results reach the portal.
+
+## Billing (careos_finance)
+
+No custom invoice model: `account.move` gains `careos_patient_id`, `careos_branch_id`,
+`careos_appointment_id`; lines carry their source (visit type, lab order, prescription line). The CareOS
+status is derived: Draft / Pending / Partially paid / Paid / Overdue / Refunded. Payments use the native
+payment register wizard; refunds use `_reverse_moves`.
+
+## Communications, analytics, AI, portal
+
+* Patient messages are chatter messages on the patient with subtype `mt_patient_message`.
+* `careos.reminder`: scheduled per appointment (e-mail; SMS reports "No SMS provider is configured").
+* `careos.notification`: per-user in-app notifications with dedupe keys.
+* `careos.ai.suggestion`: audit of every AI request (kind, user, output, applied / dismissed).
+* `careos.patient.portal_user_id` links a portal user; the portal reads only that patient's data.

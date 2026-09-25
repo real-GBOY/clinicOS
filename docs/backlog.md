@@ -27,3 +27,15 @@ Recorded deliberately so they do not derail vertical slices. None blocks the cur
 | Week view of the schedule | Day view only |
 | Demo schedule is relative to the install date | Re-seed with `_careos_demo_schedule()` / `_careos_demo_queue()` (see development.md) |
 | Walk-in patients | A walk-in is booked for "now" and checked in; no dedicated walk-in shortcut yet |
+
+## From phase 3 (clinical -> portal)
+
+| Item | Notes |
+|---|---|
+| Demo company currency | The `account` demo (l10n_us) loads after CareOS and turns the demo company to USD. CareOS always uses the company currency; production databases set EGP/Egypt before installing |
+| No SMS provider | SMS reminders fail with "No SMS provider is configured."; e-mail reminders work through the outgoing mail server |
+| Portal "Pay now" | Needs an Odoo payment provider configured; without one the invoice portal page shows no payment option |
+| AI needs enablement | Admin must enable it and set an Anthropic API key (Setup -> AI); disabled by default |
+| Polling instead of the bus | Notifications, queue and dashboards poll |
+| Cash journal | Charts without a cash journal fall back to the bank journal; the chosen method is kept in the payment memo |
+| Portal booking is a request | Creates a draft appointment that reception confirms |

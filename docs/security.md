@@ -51,11 +51,50 @@ Nobody deletes patients or allergies through CareOS; records are archived/retire
 
 "branch" = the user's assigned branches (`careos_branch_ids`); "own" = appointments whose provider is linked
 to the user. Three layers enforce this: ACLs (model), record rules (rows: branch or own schedule), and
-`ACTION_ROLES` (which role may perform which transition). Reception may start/complete visits for now
-because no clinical record is created yet; the clinical module will reserve consultations for clinicians.
+`ACTION_ROLES` (which role may perform which transition). Clinical content of a visit is reserved
+for clinicians by `careos_clinical` (see below).
 
 Conflict detection and ticket numbering use `sudo()` so bookings a user cannot see still count; they return
 no data about those bookings (only "provider is already booked" or the next number).
+
+## Clinical, pharmacy, lab, finance (enforced)
+
+| | Reception | Doctor | Nurse | Lab | Pharmacy | Finance | Manager | Admin |
+|---|---|---|---|---|---|---|---|---|
+| Encounter read | - | ✓ | ✓ | - | - | - | - | - |
+| Vitals | - | ✓ | ✓ | - | - | - | - | - |
+| Notes, diagnosis, sign-off | - | ✓ | - | - | - | - | - | - |
+| Prescribe / issue | - | ✓ | - | - | - | - | - | - |
+| Dispense | - | - | - | - | ✓ | - | - | - |
+| Receive stock | - | - | - | - | ✓ | - | - | ✓ |
+| Inventory read | - | - | - | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Order lab | - | ✓ | - | - | - | - | - | - |
+| Collect sample | - | - | ✓ | ✓ | - | - | - | - |
+| Enter / verify results | - | - | - | ✓ | - | - | - | - |
+| Invoices read | ✓ | - | - | - | - | ✓ | ✓ | ✓ |
+| Invoice, payment | ✓ | - | - | - | - | ✓ | - | - |
+| Refund | - | - | - | - | - | ✓ | - | - |
+| Analytics | - | - | - | - | - | ✓ | ✓ | ✓ |
+
+The exact per-action role lists live in each service (`ACTION_ROLES`, `TRANSITIONS`, `VIEW`/`BILL`/`REFUND`
+in `careos.billing`) and are covered by the role tests. Reception no longer writes clinical data: check-in
+opens the encounter through a controlled `sudo`, and cross-module payloads (appointment -> encounter,
+queue -> encounter) look records up with `sudo` and return them only if `has_access` passes for the caller.
+Service layers (`careos.billing`, `careos.inventory`, `careos.analytics`, `careos.portal`) check the role
+explicitly before any `sudo`.
+
+## Patient portal
+
+Portal users belong to `base.group_portal` only. Every portal route resolves the patient from
+`careos.patient.portal_user_id = current user` and never takes a patient id from the client. The portal
+shows verified lab results only; payment links use Odoo's native `get_portal_url` access token.
+
+## AI
+
+Off until an admin enables it and sets an API key. The model receives a de-identified context (no names,
+patient IDs, phone, e-mail or national ID; free text is scrubbed). Output is labelled
+"AI-GENERATED · REQUIRES REVIEW"; nothing reaches a chart until a clinician applies it, and every request,
+apply and dismiss is audited in `careos.ai.suggestion`.
 
 ## Record rules
 

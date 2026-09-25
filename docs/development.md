@@ -14,10 +14,10 @@
 .\run.ps1
 
 # Fresh demo database with CareOS installed (demo users/patients are synthetic)
-.\.venv\Scripts\python.exe odoo\odoo-bin -c odoo.conf -d careos_demo --with-demo -i careos_queue --stop-after-init
+.\.venv\Scripts\python.exe odoo\odoo-bin -c odoo.conf -d careos_demo --with-demo -i careos --stop-after-init
 
 # Upgrade after changing data/views
-.\run.ps1 -d careos_demo -u careos_base,careos_patients,careos_appointments,careos_queue
+.\run.ps1 -d careos_demo -u careos
 ```
 
 Open CareOS at `/odoo/action-careos_base.action_careos_app` (it is also the home action of demo users).
@@ -31,8 +31,13 @@ Open CareOS at `/odoo/action-careos_base.action_careos_app` (it is also the home
 | doctor2 | Doctor | Cairo, Menoufia |
 | nurse | Nurse | Cairo |
 | lab | Lab Technician | Cairo |
+| pharmacist | Pharmacist | Cairo |
+| finance | Finance | Cairo |
 | manager | Clinic Manager | all |
 | admin | CareOS System Administrator + Odoo admin | all |
+
+Patient portal: log in as `patient` / `patient` (Ahmed Hassan) and open `/careos/portal`. Staff can
+use "View as patient" from Patient 360.
 
 Demo providers: Dr. Nourhan Saeed (login `doctor`), Dr. Karim Fathy (`doctor2`), Dr. Mona El-Sayed and
 Dr. Hassan Ali (no login). Providers, rooms and visit types are configured under CareOS Configuration.
