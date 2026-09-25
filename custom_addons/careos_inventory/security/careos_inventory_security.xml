@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Pharmacists operate stock (spec §9: Pharmacy stock "Full"); CareOS
+         administrators manage inventory configuration. Other roles read
+         inventory through the CareOS service with a role check. -->
+    <record id="careos_base.group_careos_pharmacist" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('stock.group_stock_user'))]"/>
+    </record>
+    <record id="careos_base.group_careos_admin" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('stock.group_stock_manager'))]"/>
+    </record>
+</odoo>

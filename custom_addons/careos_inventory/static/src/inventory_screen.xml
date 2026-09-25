@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_inventory.InventoryScreen">
+        <div class="co-inventory">
+            <div t-if="state.error and !state.data" class="co-card"><EmptyState title="'Inventory unavailable'" body="state.error" error="true"/></div>
+            <LoadingState t-elif="!state.data" rows="6"/>
+            <t t-else="">
+                <PageHeader title="'Inventory'" subtitle="'Medicines &amp; supplies · ' + state.data.branch">
+                    <t t-set-slot="actions">
+                        <button t-if="state.data.can_receive" type="button" class="co-btn co-btn--primary" name="receive_stock"
+                                t-on-click="() => this.receive()">+ Receive stock</button>
+                    </t>
+                </PageHeader>
+                <div class="co-metric-grid">
+                    <t t-foreach="state.data.kpis" t-as="kpi" t-key="kpi.key">
+                        <div class="co-card co-card--padded" t-att-data-kpi="kpi.key">
+                            <div t-attf-class="co-metric__label {{kpi.tone ? 'co-metric__label--' + kpi.tone : ''}}" t-esc="kpi.label"/>
+                            <div t-attf-class="co-metric__value {{kpi.tone ? 'co-metric__value--' + kpi.tone : ''}}" t-esc="kpi.value"/>
+                        </div>
+                    </t>
+                </div>
+                <div class="co-directory-toolbar">
+                    <div class="co-search co-directory-toolbar__search">
+                        <span class="co-search__icon" aria-hidden="true">⌕</span>
+                        <input type="search" class="co-input" placeholder="Search items" aria-label="Search items"
+                               t-att-value="state.query" t-on-input="onQuery"/>
+                    </div>
+                    <div class="co-segmented" role="group" aria-label="Item type">
+                        <t t-foreach="typeFilters" t-as="f" t-key="f[0]">
+                            <button type="button" t-attf-class="co-segmented__item {{state.itemType === f[0] ? 'co-segmented__item--active' : ''}}"
+                                    t-on-click="() => this.setType(f[0])" t-esc="f[1]"/>
+                        </t>
+                    </div>
+                </div>
+                <div t-if="!state.data.items.length" class="co-card"><EmptyState title="'No items'" body="'Stocked medicines and supplies appear here.'"/></div>
+                <div t-else="" class="co-card co-table-scroll">
+                    <table class="co-table">
+                        <thead><tr><th>Item</th><th class="co-hide-sm">Category</th><th>Stock</th><th class="co-hide-sm">Reorder level</th><th class="co-hide-md">Expiry</th><th>Status</th><th t-if="state.data.can_receive"/></tr></thead>
+                        <tbody>
+                            <t t-foreach="state.data.items" t-as="item" t-key="item.id">
+                                <tr t-att-data-item="item.name">
+                                    <td class="co-table__primary" t-esc="item.name"/>
+                                    <td class="co-hide-sm" t-esc="item.category"/>
+                                    <td t-esc="qty(item)"/>
+                                    <td class="co-hide-sm" t-esc="item.reorder || '—'"/>
+                                    <td class="co-hide-md" t-esc="expiry(item)"/>
+                                    <td><Badge label="item.status_label" tone="item.tone"/></td>
+                                    <td t-if="state.data.can_receive" class="text-end">
+                                        <button type="button" class="co-btn co-btn--ghost co-btn--sm" t-on-click="() => this.receive(item)">Receive</button>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </div>
+    </t>
+
+    <t t-name="careos_inventory.ReceiveStockDialog">
+        <CareModal title="'Receive stock'" close="props.close">
+            <form class="co-form-grid" t-on-submit.prevent="save">
+                <label class="co-field co-field--wide">
+                    <span class="co-field__label">Item<span class="co-required">*</span></span>
+                    <select class="co-select" name="item" t-on-change="(ev) => this.state.itemId = ev.target.value">
+                        <t t-foreach="props.items" t-as="item" t-key="item.id">
+                            <option t-att-value="item.id" t-att-selected="'' + item.id === state.itemId" t-esc="item.name"/>
+                        </t>
+                    </select>
+                </label>
+                <label class="co-field">
+                    <span class="co-field__label">Quantity<span class="co-required">*</span></span>
+                    <input class="co-input" type="number" min="1" name="quantity" t-model="state.quantity"/>
+                </label>
+                <label class="co-field">
+                    <span class="co-field__label">Batch number</span>
+                    <input class="co-input" name="lot" t-model="state.lot" placeholder="Required for medicines"/>
+                </label>
+                <label class="co-field">
+                    <span class="co-field__label">Expiry date</span>
+                    <input class="co-input" type="date" name="expiry" t-model="state.expiry"/>
+                </label>
+                <div t-if="state.error" class="co-alert co-alert--danger co-field--wide" role="alert" t-esc="state.error"/>
+                <button type="submit" class="d-none"/>
+            </form>
+            <t t-set-slot="footer">
+                <button type="button" class="co-btn co-btn--secondary" t-on-click="() => props.close()">Cancel</button>
+                <button type="button" class="co-btn co-btn--primary" name="confirm_receive" t-att-disabled="state.saving or !state.quantity" t-on-click="save">Receive</button>
+            </t>
+        </CareModal>
+    </t>
+</templates>
