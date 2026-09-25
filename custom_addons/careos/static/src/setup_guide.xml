@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos.SetupGuide">
+        <div class="careos co-modal-scrim co-setup-scrim">
+            <div class="co-modal co-setup" role="dialog" aria-label="Setup guide">
+                <div t-if="!state.s" class="co-modal__body"><div class="co-skeleton" style="height: 160px"/></div>
+                <t t-else="">
+                    <div class="co-setup__head">
+                        <div class="co-setup__step">Setup guide · Step <t t-esc="state.step + 1"/> of <t t-esc="steps.length"/></div>
+                        <button type="button" class="co-modal__close" aria-label="Close" t-on-click="() => props.close()">×</button>
+                    </div>
+                    <div class="co-setup__dots">
+                        <t t-foreach="steps" t-as="step" t-key="step.key">
+                            <div t-attf-class="co-setup__dot {{step_index &lt;= state.step ? 'co-setup__dot--done' : ''}}"/>
+                        </t>
+                    </div>
+                    <h2 class="co-setup__title" t-esc="current.title"/>
+                    <p class="co-setup__desc" t-esc="current.desc"/>
+                    <div class="co-setup__box">
+                        <t t-if="current.key === 'organization'">
+                            <label class="co-field mb-2"><span class="co-field__label">Organization name</span>
+                                <input class="co-input" name="org_name" t-model="f.name"/></label>
+                            <label class="co-field"><span class="co-field__label">Country</span>
+                                <select class="co-select" name="org_country" t-on-change="(ev) => this.f.country_id = ev.target.value">
+                                    <option value="">—</option>
+                                    <t t-foreach="state.s.organization.countries" t-as="c" t-key="c.id">
+                                        <option t-att-value="c.id" t-att-selected="'' + c.id === f.country_id" t-esc="c.name"/>
+                                    </t>
+                                </select></label>
+                        </t>
+                        <t t-elif="current.key === 'branch'">
+                            <label class="co-field mb-2"><span class="co-field__label">Branch name</span>
+                                <input class="co-input" name="branch_name" t-model="f.name"/></label>
+                            <label class="co-field mb-2"><span class="co-field__label">Short code</span>
+                                <input class="co-input" name="branch_code" maxlength="5" t-model="f.code"/></label>
+                            <label class="co-field"><span class="co-field__label">Timezone</span>
+                                <select class="co-select" name="branch_tz" t-on-change="(ev) => this.f.timezone = ev.target.value">
+                                    <t t-foreach="state.s.branch.timezones" t-as="tz" t-key="tz">
+                                        <option t-att-value="tz" t-att-selected="tz === f.timezone" t-esc="tz"/>
+                                    </t>
+                                </select></label>
+                        </t>
+                        <t t-elif="current.key === 'departments'">
+                            <label class="co-field"><span class="co-field__label">Departments (comma-separated)</span>
+                                <input class="co-input" name="departments" t-model="f.text" placeholder="Cardiology, Dermatology, Dental"/></label>
+                        </t>
+                        <t t-elif="current.key === 'providers'">
+                            <t t-foreach="f.rows" t-as="row" t-key="row_index">
+                                <div class="co-setup__row">
+                                    <input class="co-input" placeholder="Name" t-model="row.name" t-att-disabled="!!row.id"/>
+                                    <input class="co-input" placeholder="Specialty" t-model="row.specialty" t-att-disabled="!!row.id"/>
+                                    <input t-if="!row.id" class="co-input" type="email" placeholder="E-mail (to invite)" t-model="row.email"/>
+                                    <span t-else="" class="co-muted small align-self-center" t-esc="row.login or 'No login'"/>
+                                </div>
+                            </t>
+                            <button type="button" class="co-btn co-btn--ghost co-btn--sm" t-on-click="() => this.addRow({ name: '', specialty: '', email: '' })">+ Another doctor</button>
+                        </t>
+                        <t t-elif="current.key === 'hours'">
+                            <div class="d-flex gap-1 flex-wrap mb-3">
+                                <t t-foreach="state.s.hours.weekdays" t-as="wd" t-key="wd[0]">
+                                    <button type="button" t-attf-class="co-btn co-btn--sm {{f.days.has(wd[0]) ? 'co-btn--primary' : 'co-btn--secondary'}}"
+                                            t-on-click="() => this.toggleDay(wd[0])" t-esc="wd[1]"/>
+                                </t>
+                            </div>
+                            <div class="co-form-grid">
+                                <label class="co-field"><span class="co-field__label">Opens</span><input type="time" class="co-input" name="hours_start" t-model="f.start"/></label>
+                                <label class="co-field"><span class="co-field__label">Closes</span><input type="time" class="co-input" name="hours_end" t-model="f.end"/></label>
+                            </div>
+                        </t>
+                        <t t-elif="current.key === 'types'">
+                            <t t-foreach="f.rows" t-as="row" t-key="row_index">
+                                <div class="co-setup__row co-setup__row--2">
+                                    <input class="co-input" placeholder="Visit type" t-model="row.name"/>
+                                    <input class="co-input" type="number" min="5" step="5" title="Minutes" t-model="row.duration"/>
+                                </div>
+                            </t>
+                            <button type="button" class="co-btn co-btn--ghost co-btn--sm" t-on-click="() => this.addRow({ name: '', duration: 30 })">+ Another type</button>
+                        </t>
+                        <t t-elif="current.key === 'prices'">
+                            <div class="co-section-label">Consultations</div>
+                            <t t-foreach="f.types" t-as="row" t-key="row.id">
+                                <div class="co-setup__price"><span t-esc="row.name"/><span><input class="co-input" type="number" min="0" t-model="row.price"/> <t t-esc="state.s.currency"/></span></div>
+                            </t>
+                            <div class="co-section-label mt-3">Laboratory</div>
+                            <t t-foreach="f.tests" t-as="row" t-key="row.id">
+                                <div class="co-setup__price"><span t-esc="row.name"/><span><input class="co-input" type="number" min="0" t-model="row.price"/> <t t-esc="state.s.currency"/></span></div>
+                            </t>
+                        </t>
+                        <t t-elif="current.key === 'staff'">
+                            <div t-if="state.s.staff.length" class="co-muted small mb-2"><t t-esc="state.s.staff.length"/> staff at this branch already.</div>
+                            <t t-foreach="f.rows" t-as="row" t-key="row_index">
+                                <div class="co-setup__row">
+                                    <input class="co-input" placeholder="Name" t-model="row.name"/>
+                                    <input class="co-input" type="email" placeholder="E-mail" t-model="row.email"/>
+                                    <select class="co-select" t-on-change="(ev) => row.role = ev.target.value">
+                                        <t t-foreach="state.s.roles" t-as="role" t-key="role">
+                                            <option t-att-value="role" t-att-selected="role === row.role" t-esc="roleLabels[role]"/>
+                                        </t>
+                                    </select>
+                                </div>
+                            </t>
+                            <button type="button" class="co-btn co-btn--ghost co-btn--sm" t-on-click="() => this.addRow({ name: '', email: '', role: 'reception' })">+ Another person</button>
+                        </t>
+                    </div>
+                    <div t-if="state.error" class="co-alert co-alert--danger mx-4 mb-3" role="alert" t-esc="state.error"/>
+                    <div class="co-setup__foot">
+                        <button type="button" class="co-btn co-btn--secondary" t-att-disabled="state.step === 0" t-on-click="back">Back</button>
+                        <button type="button" class="co-btn co-btn--primary" name="setup_next" t-att-disabled="state.saving" t-on-click="next"
+                                t-esc="state.step === steps.length - 1 ? 'Finish' : 'Continue'"/>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>
