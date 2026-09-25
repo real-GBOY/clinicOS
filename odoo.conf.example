@@ -1,0 +1,29 @@
+[options]
+; Admin / database manager master password (change for anything non-local)
+admin_passwd = change-me
+
+; PostgreSQL
+db_host = localhost
+db_port = 5432
+db_user = odoo
+db_password = odoo
+; Windows PostgreSQL can't use LC_COLLATE 'C' with a different ctype (Odoo's
+; default when cloning template0), so clone template1 instead.
+db_template = template1
+
+; Paths
+addons_path = E:/Clients/odoo Projects/clinicOS/odoo/addons,E:/Clients/odoo Projects/clinicOS/odoo/odoo/addons,E:/Clients/odoo Projects/clinicOS/custom_addons
+data_dir = E:/Clients/odoo Projects/clinicOS/data
+
+; Server
+http_port = 8069
+http_interface = 127.0.0.1
+; Uncomment to also write logs to a file:
+; logfile = E:/Clients/odoo Projects/clinicOS/logs/odoo.log
+log_level = info
+
+; Dev convenience
+; Set to True to load demo data into newly created databases
+with_demo = False
+limit_time_cpu = 600
+limit_time_real = 1200
