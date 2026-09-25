@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_finance.PaymentDialog">
+        <CareModal title="'Record payment · ' + props.invoice.name" close="props.close">
+            <p class="co-muted mb-3">Balance due <strong t-esc="money(props.invoice.balance)"/></p>
+            <div class="co-form-grid">
+                <label class="co-field">
+                    <span class="co-field__label">Amount<span class="co-required">*</span></span>
+                    <input class="co-input" type="number" min="0" step="any" name="payment_amount" t-model="state.amount"/>
+                </label>
+                <label class="co-field">
+                    <span class="co-field__label">Method</span>
+                    <select class="co-select" name="payment_method" t-on-change="(ev) => this.state.method = ev.target.value">
+                        <t t-foreach="props.invoice.methods" t-as="m" t-key="m[0]">
+                            <option t-att-value="m[0]" t-att-selected="m[0] === state.method" t-esc="m[1]"/>
+                        </t>
+                    </select>
+                </label>
+            </div>
+            <div t-if="state.error" class="co-alert co-alert--danger mt-3" role="alert" t-esc="state.error"/>
+            <t t-set-slot="footer">
+                <button type="button" class="co-btn co-btn--secondary" t-on-click="() => props.close()">Cancel</button>
+                <button type="button" class="co-btn co-btn--primary" name="confirm_payment" t-att-disabled="state.saving" t-on-click="save">Record payment</button>
+            </t>
+        </CareModal>
+    </t>
+
+    <t t-name="careos_finance.RefundDialog">
+        <CareModal title="'Refund ' + props.invoice.name" close="props.close">
+            <p class="co-muted">A full credit note is issued and the invoice is marked refunded.</p>
+            <label class="co-field">
+                <span class="co-field__label">Reason<span class="co-required">*</span></span>
+                <input class="co-input" name="refund_reason" t-model="state.reason"/>
+            </label>
+            <div t-if="state.error" class="co-alert co-alert--danger mt-3" role="alert" t-esc="state.error"/>
+            <t t-set-slot="footer">
+                <button type="button" class="co-btn co-btn--secondary" t-on-click="() => props.close()">Cancel</button>
+                <button type="button" class="co-btn co-btn--danger" t-att-disabled="state.saving" t-on-click="save">Issue refund</button>
+            </t>
+        </CareModal>
+    </t>
+
+    <t t-name="careos_finance.InvoiceDetail">
+        <div>
+            <div t-if="state.error" class="co-card"><EmptyState title="'Invoice unavailable'" body="state.error" error="true"/></div>
+            <LoadingState t-elif="!state.inv" rows="5"/>
+            <t t-else="">
+                <div class="co-page-header">
+                    <div>
+                        <h1 class="co-page-header__title d-flex align-items-center gap-2 flex-wrap">
+                            Invoice <t t-esc="state.inv.name"/>
+                            <Badge label="state.inv.status_label" tone="state.inv.tone"/>
+                        </h1>
+                        <div class="co-page-header__subtitle">
+                            <button type="button" class="co-link-button" t-on-click="openPatient" t-esc="state.inv.patient.name"/>
+                            <t t-if="state.inv.date"> · Issued <t t-esc="date(state.inv.date)"/></t>
+                            <t t-if="state.inv.due"> · Due <t t-esc="date(state.inv.due)"/></t>
+                            · <t t-esc="state.inv.branch"/>
+                        </div>
+                    </div>
+                    <div class="co-page-header__actions">
+                        <button t-if="state.inv.can_post" type="button" class="co-btn co-btn--primary" name="post_invoice" t-att-disabled="state.busy" t-on-click="post">Issue invoice</button>
+                        <button t-if="state.inv.can_refund" type="button" class="co-btn co-btn--ghost" name="refund_invoice" t-on-click="refund">Refund</button>
+                    </div>
+                </div>
+                <div class="co-invoice-grid">
+                    <div class="co-card">
+                        <div class="co-table-scroll">
+                            <table class="co-table">
+                                <thead><tr><th>Service</th><th>Qty</th><th class="co-hide-sm">Unit price</th><th class="text-end">Total</th></tr></thead>
+                                <tbody>
+                                    <t t-foreach="state.inv.lines" t-as="line" t-key="line.id">
+                                        <tr>
+                                            <td class="co-table__primary" t-esc="line.service"/>
+                                            <td t-esc="line.qty"/>
+                                            <td class="co-hide-sm" t-esc="money(line.unit)"/>
+                                            <td class="text-end" t-esc="money(line.total)"/>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="co-invoice-totals">
+                            <div class="co-muted">Total</div><div class="fw-bold" t-esc="money(state.inv.total)"/>
+                            <div class="co-muted">Paid</div><div t-esc="money(state.inv.paid)"/>
+                            <div class="fw-bold">Balance due</div>
+                            <div t-attf-class="fw-bold {{state.inv.balance ? 'co-balance--due' : ''}}" data-field="balance" t-esc="money(state.inv.balance)"/>
+                        </div>
+                    </div>
+                    <div class="co-card co-card--padded">
+                        <div class="co-card__title">Payment history</div>
+                        <div t-if="!state.inv.payments.length" class="co-muted co-list-row">No payments yet.</div>
+                        <t t-foreach="state.inv.payments" t-as="payment" t-key="payment_index">
+                            <div class="co-list-row d-flex justify-content-between">
+                                <span><t t-esc="date(payment.date)"/> · <t t-esc="payment.method"/></span>
+                                <strong t-esc="money(payment.amount)"/>
+                            </div>
+                        </t>
+                        <button t-if="state.inv.can_pay" type="button" class="co-btn co-btn--primary w-100 mt-3" name="record_payment" t-on-click="pay">Record payment</button>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+
+    <t t-name="careos_finance.InvoiceList">
+        <div>
+            <PageHeader title="'Invoices'" subtitle="'Visit invoices at this branch'"/>
+            <div class="co-directory-toolbar">
+                <div class="co-search co-directory-toolbar__search">
+                    <span class="co-search__icon" aria-hidden="true">⌕</span>
+                    <input type="search" class="co-input" placeholder="Invoice number or patient" aria-label="Search invoices"
+                           t-att-value="state.query" t-on-input="onQuery"/>
+                </div>
+                <div class="co-segmented" role="group" aria-label="Status">
+                    <t t-foreach="filters" t-as="f" t-key="f[0]">
+                        <button type="button" t-attf-class="co-segmented__item {{state.status === f[0] ? 'co-segmented__item--active' : ''}}"
+                                t-on-click="() => this.setFilter(f[0])" t-esc="f[1]"/>
+                    </t>
+                </div>
+            </div>
+            <div t-if="state.error" class="co-card"><EmptyState title="'Invoices unavailable'" body="state.error" error="true"/></div>
+            <LoadingState t-elif="!state.rows" rows="5"/>
+            <div t-elif="!state.rows.length" class="co-card"><EmptyState title="'No invoices'" body="'Invoices created from completed visits appear here.'"/></div>
+            <div t-else="" class="co-card co-table-scroll">
+                <table class="co-table co-table--interactive">
+                    <thead><tr><th>Invoice</th><th>Patient</th><th class="co-hide-sm">Date</th><th class="text-end">Total</th><th class="text-end">Balance</th><th>Status</th></tr></thead>
+                    <tbody>
+                        <t t-foreach="state.rows" t-as="row" t-key="row.id">
+                            <tr t-on-click="() => this.open(row)" tabindex="0" t-on-keydown="(ev) => ev.key === 'Enter' and this.open(row)">
+                                <td class="co-table__primary" t-esc="row.name"/>
+                                <td t-esc="row.patient.name"/>
+                                <td class="co-hide-sm" t-esc="date(row)"/>
+                                <td class="text-end" t-esc="money(row, row.total)"/>
+                                <td class="text-end" t-esc="money(row, row.balance)"/>
+                                <td><Badge label="row.status_label" tone="row.tone"/></td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="careos_finance.VisitBilling">
+        <section t-if="state.data" class="co-card co-card--padded">
+            <div class="co-card__title">Billing</div>
+            <t t-foreach="state.data.invoices" t-as="invoice" t-key="invoice.id">
+                <button type="button" class="co-list-row co-row-button d-flex justify-content-between align-items-center" t-on-click="() => this.open(invoice)">
+                    <span><strong t-esc="invoice.name"/> · <t t-esc="money(invoice.total)"/></span>
+                    <Badge label="invoice.status_label" tone="invoice.tone"/>
+                </button>
+            </t>
+            <t t-if="state.data.pending.length">
+                <div class="co-muted small mt-2 mb-1">Not billed yet</div>
+                <t t-foreach="state.data.pending" t-as="item" t-key="item_index">
+                    <div class="co-list-row d-flex justify-content-between"><span t-esc="item.name"/><span t-esc="money(item.amount)"/></div>
+                </t>
+                <button t-if="state.data.can_bill" type="button" class="co-btn co-btn--primary w-100 mt-2" name="create_invoice"
+                        t-att-disabled="state.busy" t-on-click="createInvoice">
+                    Create invoice · <t t-esc="money(state.data.pending_total)"/>
+                </button>
+            </t>
+            <div t-elif="!state.data.invoices.length" class="co-muted co-list-row">Nothing to bill yet.</div>
+        </section>
+    </t>
+
+    <t t-name="careos_finance.PatientBilling">
+        <div>
+            <div t-if="props.profile.balance_due" class="co-alert co-alert--warning mb-3">
+                Balance due: <strong t-esc="balanceDue"/>
+            </div>
+            <EmptyState t-if="state.error" title="'Billing unavailable'" body="state.error" error="true"/>
+            <LoadingState t-elif="!state.rows" rows="3"/>
+            <EmptyState t-elif="!state.rows.length" title="'No invoices'" body="'Invoices for this patient appear here.'"/>
+            <div t-else="" class="co-table-scroll">
+                <table class="co-table co-table--interactive">
+                    <thead><tr><th>Invoice</th><th>Date</th><th class="text-end">Total</th><th>Status</th></tr></thead>
+                    <tbody>
+                        <t t-foreach="state.rows" t-as="row" t-key="row.id">
+                            <tr t-on-click="() => this.open(row)" tabindex="0">
+                                <td class="co-table__primary" t-esc="row.name"/>
+                                <td t-esc="date(row)"/>
+                                <td class="text-end" t-esc="money(row, row.total)"/>
+                                <td><Badge label="row.status_label" tone="row.tone"/></td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </t>
+</templates>

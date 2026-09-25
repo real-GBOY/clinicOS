@@ -1,0 +1,24 @@
+.co-invoice-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+}
+.co-invoice-totals {
+    display: grid;
+    grid-template-columns: auto auto;
+    justify-content: end;
+    gap: 4px 24px;
+    padding: 14px 12px;
+    font-size: 13px;
+    text-align: right;
+    border-top: 1px solid var(--careos-border);
+}
+.co-balance--due {
+    color: var(--careos-warning-soft-text);
+}
+@media (max-width: 900px) {
+    .co-invoice-grid {
+        grid-template-columns: 1fr;
+    }
+}
