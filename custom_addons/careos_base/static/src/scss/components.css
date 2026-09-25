@@ -257,6 +257,7 @@
 }
 .co-alert--warning { background: oklch(96% 0.04 80); border-color: var(--careos-warning-border); color: oklch(35% 0.1 80); }
 .co-alert--success { background: oklch(95% 0.03 145); border-color: oklch(80% 0.06 145); color: oklch(30% 0.08 145); }
+.co-alert--info { background: var(--careos-primary-soft); border-color: oklch(85% 0.04 195); color: var(--careos-primary-soft-text); }
 .co-alert--danger { background: var(--careos-danger-soft); border-color: oklch(82% 0.08 25); color: oklch(38% 0.14 25); }
 
 /* ---------- Tables ---------- */
