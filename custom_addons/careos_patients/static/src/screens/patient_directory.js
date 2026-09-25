@@ -81,6 +81,10 @@ export class PatientDirectory extends Component {
         }
     }
 
+    previousPage() {
+        this.load(Math.max(0, this.state.offset - PAGE_SIZE));
+    }
+
     onSearchInput(ev) {
         this.state.query = ev.target.value;
         this.debouncedLoad();

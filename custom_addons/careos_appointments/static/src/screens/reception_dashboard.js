@@ -2,7 +2,7 @@ import { Component, onWillStart, onWillUnmount, useState } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { Badge, EmptyState, LoadingState, PageHeader } from "@careos_base/components/primitives";
-import { screenRegistry } from "@careos_base/shell/screen_registry";
+import { dashboardRegistry } from "@careos_base/shell/screen_registry";
 import { PatientFormDialog } from "@careos_patients/dialogs/patient_form_dialog";
 import { AppointmentActions } from "../components/appointment_actions";
 import { BookingDialog } from "../dialogs/booking_dialog";
@@ -82,10 +82,10 @@ export class ReceptionDashboard extends Component {
     }
 }
 
-screenRegistry.add("dashboard", {
-    label: "Dashboard",
-    navGroup: "overview",
-    sequence: 1,
+dashboardRegistry.add("reception", {
+    label: "Reception",
+    sequence: 10,
     roles: ["reception", "nurse", "manager", "admin"],
+    defaultFor: ["reception", "nurse"],
     Component: ReceptionDashboard,
 });

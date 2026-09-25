@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_base.NotificationBell">
+        <div class="co-notif">
+            <button type="button" class="co-topbar-button" name="notifications" t-on-click="toggle"
+                    t-att-aria-label="state.unread ? state.unread + ' unread notifications' : 'Notifications'"
+                    aria-haspopup="menu" t-att-aria-expanded="state.open ? 'true' : 'false'">
+                🔔<span t-if="state.unread" class="co-topbar-button__dot"/>
+            </button>
+            <div t-if="state.open" class="co-popover co-notif__menu" role="menu" t-on-click.stop="">
+                <div class="co-popover__header d-flex justify-content-between align-items-center">
+                    <span>Notifications</span>
+                    <button t-if="state.unread" type="button" class="co-btn co-btn--ghost co-btn--sm" t-on-click="markAllRead">Mark all read</button>
+                </div>
+                <div t-if="!state.items.length" class="co-notif__empty">You're all caught up.</div>
+                <t t-foreach="state.items" t-as="item" t-key="item.id">
+                    <button type="button" role="menuitem" t-attf-class="co-notif__item {{item.is_read ? '' : 'co-notif__item--unread'}}"
+                            t-on-click="() => this.open(item)">
+                        <span t-attf-class="co-notif__dot {{dotClass(item)}}"/>
+                        <span class="min-w-0">
+                            <span class="co-notif__title d-block" t-esc="item.title"/>
+                            <span t-if="item.body" class="co-notif__body d-block" t-esc="item.body"/>
+                            <span class="co-notif__time d-block" t-esc="when(item)"/>
+                        </span>
+                    </button>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

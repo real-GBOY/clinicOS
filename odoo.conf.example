@@ -26,4 +26,6 @@ log_level = info
 ; Set to True to load demo data into newly created databases
 with_demo = False
 limit_time_cpu = 600
-limit_time_real = 1200
+; 0 = no watchdog. The threaded dev server otherwise counts idle keep-alive
+; connections as long requests and "reloads" (which exits on Windows).
+limit_time_real = 0

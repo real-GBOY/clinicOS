@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_base.DashboardHost">
+        <t t-if="current">
+            <t t-component="current.Component" t-key="current.id"/>
+        </t>
+        <EmptyState t-else="" title="'No dashboard for your role'" body="'Use the navigation to open a workspace.'"/>
+    </t>
+
+    <t t-name="careos_base.DashboardTabs">
+        <div t-if="props.screen === 'dashboard' and dashboards.length > 1" class="co-segmented" role="tablist" aria-label="Dashboard">
+            <t t-foreach="dashboards" t-as="dashboard" t-key="dashboard.id">
+                <button type="button" role="tab" t-att-data-dashboard="dashboard.id"
+                        t-attf-class="co-segmented__item {{dashboard.id === currentId ? 'co-segmented__item--active' : ''}}"
+                        t-att-aria-selected="dashboard.id === currentId ? 'true' : 'false'"
+                        t-on-click="() => this.select(dashboard.id)" t-esc="dashboard.label"/>
+            </t>
+        </div>
+    </t>
+</templates>

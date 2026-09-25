@@ -63,7 +63,7 @@ export class PatientCommunication extends Component {
 }
 
 patientTabRegistry.add("communication", {
-    label: "Communication",
+    label: "Notes",
     sequence: 30,
     Component: PatientCommunication,
 });

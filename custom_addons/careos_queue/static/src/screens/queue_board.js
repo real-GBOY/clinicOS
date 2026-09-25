@@ -1,10 +1,17 @@
 import { Component, onWillStart, onWillUnmount, useState } from "@odoo/owl";
+import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { Badge, EmptyState, LoadingState, PageHeader } from "@careos_base/components/primitives";
 import { screenRegistry } from "@careos_base/shell/screen_registry";
 import { formatTime, minutesSince } from "@careos_appointments/appointment_utils";
 
 const REFRESH_MS = 15000;
+
+/**
+ * Extra ticket buttons contributed by other modules (e.g. "Record vitals").
+ * Entry: { label, sequence, style, isVisible(ticket, env), run(ticket, env, reload) }
+ */
+export const queueTicketActionRegistry = registry.category("careos.queue_ticket_actions");
 
 export const TICKET_ACTIONS = {
     call: { label: "Call patient", style: "primary", method: "action_call" },
@@ -51,6 +58,18 @@ export class QueueBoard extends Component {
 
     actionsFor(ticket) {
         return ticket.actions.map((key) => ({ key, ...TICKET_ACTIONS[key] }));
+    }
+
+    extraActions(ticket) {
+        return queueTicketActionRegistry
+            .getEntries()
+            .map(([id, action]) => ({ id, ...action }))
+            .filter((action) => action.isVisible(ticket, this.env))
+            .sort((a, b) => (a.sequence ?? 10) - (b.sequence ?? 10));
+    }
+
+    runExtra(ticket, action) {
+        action.run(ticket, this.env, () => this.load());
     }
 
     waited(ticket) {

@@ -59,6 +59,9 @@
                                 <div class="co-note__body" t-esc="a.notes"/>
                             </div>
                         </section>
+                        <t t-foreach="sections" t-as="section" t-key="section.id">
+                            <t t-component="section.Component" appointment="a" reload.bind="load"/>
+                        </t>
                     </div>
                     <section class="co-card co-card--padded">
                         <div class="co-card__title">History</div>

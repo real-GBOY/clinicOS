@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Synthetic organization structure for development and demos. -->
 <odoo>
+    <!-- Demo organization: an Egyptian clinic group billing in EGP (as in the
+         CareOS prototype). Set before accounting is installed. -->
+    <record id="base.EGP" model="res.currency">
+        <field name="active" eval="True"/>
+    </record>
+    <record id="base.main_company" model="res.company">
+        <field name="name">Acme Medical Group</field>
+        <field name="country_id" ref="base.eg"/>
+        <field name="currency_id" ref="base.EGP"/>
+    </record>
+
     <record id="branch_cairo" model="careos.branch">
         <field name="name">Cairo Branch</field>
         <field name="code">CAI</field>

@@ -1,10 +1,18 @@
-import { Component, onMounted, onWillStart, onWillUnmount, useExternalListener, useState, useSubEnv } from "@odoo/owl";
+import { Component, onMounted, onWillStart, onWillUnmount, reactive, useExternalListener, useState, useSubEnv } from "@odoo/owl";
 import { browser } from "@web/core/browser/browser";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { Avatar, EmptyState, Wordmark } from "../components/primitives";
 import { CommandPalette } from "../search/command_palette";
-import { isScreenAllowed, NAV_GROUPS, ROLE_LABELS, screenRegistry } from "./screen_registry";
+import {
+    hasRole,
+    isScreenAllowed,
+    NAV_GROUPS,
+    ROLE_LABELS,
+    screenRegistry,
+    sidebarActionRegistry,
+    topbarRegistry,
+} from "./screen_registry";
 
 /**
  * The CareOS application shell, mounted as a fullscreen client action so no
@@ -34,12 +42,22 @@ export class CareOSApp extends Component {
         });
 
         const shell = this;
+        // Cross-component UI state (e.g. which role dashboard is showing).
+        this.ui = reactive({ dashboard: null });
         useSubEnv({
             careos: {
                 navigate: this.navigate.bind(this),
                 setPageTitle: this.setPageTitle.bind(this),
+                reloadSession: this.reloadSession.bind(this),
+                ui: this.ui,
                 get session() {
                     return shell.state.session;
+                },
+                get screen() {
+                    return shell.state.screen;
+                },
+                get params() {
+                    return shell.state.params;
                 },
             },
         });
@@ -68,6 +86,11 @@ export class CareOSApp extends Component {
         }
     }
 
+    async reloadSession() {
+        this.state.session = await this.orm.call("res.users", "careos_get_session_context", []);
+        this.state.renderKey++;
+    }
+
     // ------------------------------------------------------------------
     // Navigation
     // ------------------------------------------------------------------
@@ -77,7 +100,7 @@ export class CareOSApp extends Component {
         return screenRegistry
             .getEntries()
             .map(([id, screen]) => ({ id, ...screen }))
-            .filter((screen) => isScreenAllowed(screen, roles));
+            .filter((screen) => isScreenAllowed(screen, roles, this.state.session));
     }
 
     get navScreens() {
@@ -106,6 +129,27 @@ export class CareOSApp extends Component {
     get parentScreen() {
         const parent = this.currentScreen?.parent;
         return parent ? this.allowedScreens.find((s) => s.id === parent) : null;
+    }
+
+    get topbarItems() {
+        return topbarRegistry
+            .getEntries()
+            .map(([id, item]) => ({ id, ...item }))
+            .filter((item) => hasRole(this.state.session.roles, item.roles))
+            .sort((a, b) => (a.sequence ?? 10) - (b.sequence ?? 10));
+    }
+
+    get sidebarActions() {
+        return sidebarActionRegistry
+            .getEntries()
+            .map(([id, action]) => ({ id, ...action }))
+            .filter((action) => hasRole(this.state.session.roles, action.roles))
+            .sort((a, b) => (a.sequence ?? 10) - (b.sequence ?? 10));
+    }
+
+    runSidebarAction(action) {
+        this.state.navOpen = false;
+        action.run(this.env);
     }
 
     get activeNavId() {
@@ -162,6 +206,11 @@ export class CareOSApp extends Component {
     get roleSummary() {
         const roles = this.state.session?.roles || [];
         return roles.map((r) => ROLE_LABELS[r]).join(", ") || "Staff";
+    }
+
+    get userMeta() {
+        const s = this.state.session;
+        return [s.department || this.roleSummary, s.branch?.name].filter(Boolean).join(" · ");
     }
 
     toggleUserMenu(ev) {

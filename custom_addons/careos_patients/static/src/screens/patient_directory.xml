@@ -72,7 +72,7 @@
                     <span t-esc="rangeLabel"/>
                     <span class="d-flex gap-2">
                         <button type="button" class="co-btn co-btn--secondary co-btn--sm" t-att-disabled="state.offset === 0"
-                                t-on-click="() => this.load(Math.max(0, state.offset - pageSize))">Previous</button>
+                                t-on-click="previousPage">Previous</button>
                         <button type="button" class="co-btn co-btn--secondary co-btn--sm" t-att-disabled="state.offset + state.records.length >= state.total"
                                 t-on-click="() => this.load(state.offset + pageSize)">Next</button>
                     </span>

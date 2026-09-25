@@ -22,12 +22,16 @@
                         </t>
                     </t>
                     <div class="co-sidebar__spacer"/>
+                    <t t-foreach="sidebarActions" t-as="action" t-key="action.id">
+                        <button type="button" t-attf-class="co-sidebar__action co-sidebar__action--{{action.style or 'outline'}}"
+                                t-att-name="'sidebar_' + action.id" t-on-click="() => this.runSidebarAction(action)" t-esc="action.label"/>
+                    </t>
                     <button type="button" class="co-sidebar__user" t-on-click="toggleUserMenu"
                             aria-haspopup="menu" t-att-aria-expanded="state.userMenuOpen ? 'true' : 'false'">
                         <Avatar name="state.session.name"/>
                         <span style="min-width: 0">
                             <span class="co-sidebar__user-name d-block" t-esc="state.session.name"/>
-                            <span class="co-sidebar__user-meta d-block" t-esc="roleSummary"/>
+                            <span class="co-sidebar__user-meta d-block" t-esc="userMeta"/>
                         </span>
                     </button>
                     <div t-if="state.userMenuOpen" class="co-popover co-user-menu" role="menu">
@@ -47,6 +51,10 @@
                                         aria-haspopup="menu" t-att-aria-expanded="state.branchMenuOpen ? 'true' : 'false'">
                                     <t t-esc="state.session.branch.name"/><span class="co-topbar__branch-caret">▾</span>
                                 </button>
+                            </t>
+                            <t t-if="state.session.department">
+                                <span class="co-topbar__sep">/</span>
+                                <span class="co-topbar__crumb" t-esc="state.session.department"/>
                             </t>
                             <t t-if="parentScreen">
                                 <span class="co-topbar__sep">/</span>
@@ -71,6 +79,11 @@
                             <span>Search patients, appointments, invoices…</span>
                             <span class="co-topbar__kbd" t-esc="searchShortcut"/>
                         </button>
+                        <div class="co-topbar__items">
+                            <t t-foreach="topbarItems" t-as="item" t-key="item.id">
+                                <t t-component="item.Component" screen="state.screen"/>
+                            </t>
+                        </div>
                     </header>
 
                     <main class="co-content">

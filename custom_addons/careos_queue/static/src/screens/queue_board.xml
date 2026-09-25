@@ -34,6 +34,11 @@
                                                 t-attf-class="co-btn co-btn--sm co-btn--{{action.style}}"
                                                 t-on-click="() => this.run(ticket, action.key)" t-esc="action.label"/>
                                     </t>
+                                    <t t-foreach="extraActions(ticket)" t-as="extra" t-key="extra.id">
+                                        <button type="button" t-att-name="'ticket_' + extra.id"
+                                                t-attf-class="co-btn co-btn--sm co-btn--{{extra.style or 'secondary'}}"
+                                                t-on-click="() => this.runExtra(ticket, extra)" t-esc="extra.label"/>
+                                    </t>
                                 </div>
                             </article>
                         </t>
@@ -56,6 +61,11 @@
                                         <button type="button" t-att-name="'ticket_' + action.key" t-att-disabled="state.busy"
                                                 t-attf-class="co-btn co-btn--sm co-btn--{{action.style}}"
                                                 t-on-click="() => this.run(ticket, action.key)" t-esc="action.label"/>
+                                    </t>
+                                    <t t-foreach="extraActions(ticket)" t-as="extra" t-key="extra.id">
+                                        <button type="button" t-att-name="'ticket_' + extra.id"
+                                                t-attf-class="co-btn co-btn--sm co-btn--{{extra.style or 'secondary'}}"
+                                                t-on-click="() => this.runExtra(ticket, extra)" t-esc="extra.label"/>
                                     </t>
                                 </div>
                             </article>

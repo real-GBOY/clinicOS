@@ -135,8 +135,6 @@
 }
 
 /* ---------- Reception dashboard ---------- */
-.co-metric__value--warning { color: var(--careos-warning-soft-text); }
-.co-metric__value--danger { color: var(--careos-danger-soft-text); }
 .co-dashboard__grid {
     display: grid;
     grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);

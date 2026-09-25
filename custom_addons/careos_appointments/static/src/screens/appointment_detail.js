@@ -1,9 +1,16 @@
 import { Component, onWillStart, useState } from "@odoo/owl";
+import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { Avatar, Badge, EmptyState, LoadingState, Timeline } from "@careos_base/components/primitives";
 import { screenRegistry } from "@careos_base/shell/screen_registry";
 import { AppointmentActions } from "../components/appointment_actions";
 import { APPOINTMENT_TONE, formatDay, formatTime, relativeDay } from "../appointment_utils";
+
+/**
+ * Cards below the appointment details contributed by other modules (billing…).
+ * Entry: { sequence, Component, isVisible?(appointment, env) } — receives { appointment, reload }.
+ */
+export const appointmentSectionRegistry = registry.category("careos.appointment_sections");
 
 export class AppointmentDetail extends Component {
     static template = "careos_appointments.AppointmentDetail";
@@ -49,6 +56,14 @@ export class AppointmentDetail extends Component {
             ["Branch", a.branch.name],
             ["Reason", a.reason || "—"],
         ];
+    }
+
+    get sections() {
+        return appointmentSectionRegistry
+            .getEntries()
+            .map(([id, section]) => ({ id, ...section }))
+            .filter((section) => !section.isVisible || section.isVisible(this.a, this.env))
+            .sort((a, b) => (a.sequence ?? 10) - (b.sequence ?? 10));
     }
 
     get historyEvents() {

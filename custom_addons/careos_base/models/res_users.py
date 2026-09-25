@@ -31,6 +31,11 @@ class ResUsers(models.Model):
         string="Current Branch",
         help="Branch context used for defaults and operational views.",
     )
+    careos_department_id = fields.Many2one(
+        "careos.department",
+        string="Department",
+        help="Shown in the CareOS header and used as the default department.",
+    )
 
     @api.constrains("careos_branch_id", "careos_branch_ids")
     def _check_careos_branch(self):
@@ -57,6 +62,7 @@ class ResUsers(models.Model):
             "is_system": user.has_group("base.group_system"),
             "company": user.company_id.name,
             "branch": {"id": current.id, "name": current.name} if current else False,
+            "department": user.careos_department_id.name or False,
             "branches": [{"id": b.id, "name": b.name} for b in branches],
         }
 

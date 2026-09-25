@@ -78,6 +78,10 @@ class CareosPatient(models.Model):
     )
 
     active = fields.Boolean(default=True, tracking=True)
+    partner_id = fields.Many2one(
+        "res.partner", string="Contact", readonly=True, copy=False,
+        help="Contact used for invoices, messages and portal access; created on first use.",
+    )
 
     _ref_company_uniq = models.Constraint(
         "UNIQUE(ref, company_id)", "Patient IDs must be unique within the organization."
@@ -167,6 +171,21 @@ class CareosPatient(models.Model):
         if operator in ("ilike", "like") and len(digits) >= 4:
             domain = Domain.OR([domain, Domain("phone_normalized", "like", digits)])
         return domain
+
+    def _careos_partner(self):
+        """The patient's contact for invoices, messages and portal access,
+        created on first use. Separate from the patient record because
+        partners are visible to every internal user; it carries only contact
+        details, never clinical data."""
+        self.ensure_one()
+        patient = self.sudo()
+        if not patient.partner_id:
+            patient.partner_id = self.env["res.partner"].sudo().create({
+                "name": patient.name, "phone": patient.phone, "email": patient.email,
+                "street": patient.street, "city": patient.city, "country_id": patient.country_id.id,
+                "company_id": patient.company_id.id,
+            })
+        return patient.partner_id
 
     # ------------------------------------------------------------------
     # Registration

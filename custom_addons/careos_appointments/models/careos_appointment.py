@@ -216,7 +216,11 @@ class CareosAppointment(models.Model):
 
     def _check_bookable_date(self):
         """New bookings and reschedules cannot land on a past day (same-day
-        bookings earlier than now are allowed, e.g. for walk-ins recorded late)."""
+        bookings earlier than now are allowed, e.g. for walk-ins recorded late).
+        Historic records can be imported by the system only (superuser with the
+        ``careos_import_history`` context), e.g. when migrating a clinic."""
+        if self.env.su and self.env.context.get("careos_import_history"):
+            return
         for appointment in self:
             branch = appointment.branch_id
             if branch._careos_local_date(appointment.start) < branch._careos_today():
