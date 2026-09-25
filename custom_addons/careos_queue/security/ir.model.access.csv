@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_careos_queue_ticket_reception,careos.queue.ticket reception,model_careos_queue_ticket,careos_base.group_careos_reception,1,1,1,0
+access_careos_queue_ticket_nurse,careos.queue.ticket nurse,model_careos_queue_ticket,careos_base.group_careos_nurse,1,1,0,0
+access_careos_queue_ticket_doctor,careos.queue.ticket doctor,model_careos_queue_ticket,careos_base.group_careos_doctor,1,1,0,0
+access_careos_queue_ticket_manager,careos.queue.ticket manager,model_careos_queue_ticket,careos_base.group_careos_manager,1,0,0,0
+access_careos_queue_ticket_admin,careos.queue.ticket admin,model_careos_queue_ticket,careos_base.group_careos_admin,1,0,0,0

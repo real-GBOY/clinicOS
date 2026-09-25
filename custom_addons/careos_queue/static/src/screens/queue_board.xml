@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_queue.QueueBoard">
+        <div class="co-queue">
+            <div t-if="state.error and !b" class="co-card">
+                <EmptyState title="'Queue unavailable'" body="state.error" error="true">
+                    <button type="button" class="co-btn co-btn--secondary co-btn--sm" t-on-click="() => this.load()">Try again</button>
+                </EmptyState>
+            </div>
+            <LoadingState t-elif="!b" rows="5"/>
+            <t t-else="">
+                <PageHeader title="'Live Queue'" subtitle="subtitle"/>
+                <div class="co-queue__columns">
+                    <section class="co-queue__column" aria-labelledby="co-q-waiting">
+                        <div class="co-queue__heading co-queue__heading--waiting" id="co-q-waiting">WAITING · <t t-esc="b.waiting.length"/></div>
+                        <div t-if="!b.waiting.length" class="co-queue__empty">Nobody is waiting.</div>
+                        <t t-foreach="b.waiting" t-as="ticket" t-key="ticket.id">
+                            <article t-attf-class="co-ticket {{ticket.state === 'called' ? 'co-ticket--called' : ''}}" t-att-data-ticket-id="ticket.id">
+                                <div class="co-ticket__head">
+                                    <button type="button" class="co-ticket__patient" t-on-click="() => this.openPatient(ticket)">
+                                        <span class="co-ticket__number" t-esc="ticket.label"/> <t t-esc="ticket.patient.name"/>
+                                    </button>
+                                    <span class="co-ticket__time" t-esc="time(ticket.appointment.start)"/>
+                                </div>
+                                <div class="co-ticket__meta">
+                                    Waiting <t t-esc="waited(ticket)"/> min · <t t-esc="ticket.appointment.type"/> · <t t-esc="ticket.provider.name"/>
+                                </div>
+                                <div t-if="ticket.state === 'called'" class="mt-1">
+                                    <Badge label="ticket.room ? 'Called · ' + ticket.room.name : 'Called'" tone="'info'"/>
+                                </div>
+                                <div class="co-ticket__actions">
+                                    <t t-foreach="actionsFor(ticket)" t-as="action" t-key="action.key">
+                                        <button type="button" t-att-name="'ticket_' + action.key" t-att-disabled="state.busy"
+                                                t-attf-class="co-btn co-btn--sm co-btn--{{action.style}}"
+                                                t-on-click="() => this.run(ticket, action.key)" t-esc="action.label"/>
+                                    </t>
+                                </div>
+                            </article>
+                        </t>
+                    </section>
+
+                    <section class="co-queue__column" aria-labelledby="co-q-consult">
+                        <div class="co-queue__heading co-queue__heading--consult" id="co-q-consult">IN CONSULTATION · <t t-esc="b.in_consultation.length"/></div>
+                        <div t-if="!b.in_consultation.length" class="co-queue__empty">No consultations in progress.</div>
+                        <t t-foreach="b.in_consultation" t-as="ticket" t-key="ticket.id">
+                            <article class="co-ticket co-ticket--consult" t-att-data-ticket-id="ticket.id">
+                                <div class="co-ticket__head">
+                                    <button type="button" class="co-ticket__patient" t-on-click="() => this.openPatient(ticket)">
+                                        <span class="co-ticket__number" t-esc="ticket.label"/> <t t-esc="ticket.patient.name"/>
+                                    </button>
+                                    <span class="co-ticket__time">since <t t-esc="time(ticket.started_at)"/></span>
+                                </div>
+                                <div class="co-ticket__meta"><t t-if="ticket.room"><t t-esc="ticket.room.name"/> · </t><t t-esc="ticket.provider.name"/></div>
+                                <div class="co-ticket__actions">
+                                    <t t-foreach="actionsFor(ticket)" t-as="action" t-key="action.key">
+                                        <button type="button" t-att-name="'ticket_' + action.key" t-att-disabled="state.busy"
+                                                t-attf-class="co-btn co-btn--sm co-btn--{{action.style}}"
+                                                t-on-click="() => this.run(ticket, action.key)" t-esc="action.label"/>
+                                    </t>
+                                </div>
+                            </article>
+                        </t>
+                    </section>
+
+                    <section class="co-queue__column" aria-labelledby="co-q-done">
+                        <div class="co-queue__heading co-queue__heading--done" id="co-q-done">COMPLETED TODAY · <t t-esc="b.done.length"/></div>
+                        <div t-if="!b.done.length" class="co-queue__empty">No completed visits yet.</div>
+                        <t t-foreach="b.done" t-as="ticket" t-key="ticket.id">
+                            <article class="co-ticket co-ticket--done" t-att-data-ticket-id="ticket.id" t-on-click="() => this.openAppointment(ticket)">
+                                <div class="co-ticket__head">
+                                    <span class="co-ticket__patient-static"><span class="co-ticket__number" t-esc="ticket.label"/> <t t-esc="ticket.patient.name"/></span>
+                                </div>
+                                <div class="co-ticket__meta"><t t-esc="time(ticket.completed_at)"/> · <t t-esc="ticket.provider.name"/></div>
+                            </article>
+                        </t>
+                    </section>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>

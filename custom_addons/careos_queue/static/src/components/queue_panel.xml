@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_queue.QueuePanel">
+        <section t-if="queue" class="co-card co-card--padded" aria-labelledby="co-queue-panel-title">
+            <div class="d-flex justify-content-between align-items-baseline">
+                <div class="co-card__title" id="co-queue-panel-title">Queue now</div>
+                <button type="button" class="co-btn co-btn--ghost co-btn--sm" name="quick_queue" t-on-click="openQueue">Open queue →</button>
+            </div>
+            <div t-if="!queue.waiting.length and !queue.in_consultation.length" class="co-muted co-list-row">The waiting area is empty.</div>
+            <t t-foreach="queue.in_consultation" t-as="ticket" t-key="ticket.id">
+                <div class="co-list-row d-flex justify-content-between align-items-center gap-2">
+                    <span><strong t-esc="ticket.patient.name"/> <span class="co-muted">· <t t-esc="ticket.provider.name"/></span></span>
+                    <Badge label="'In consultation'" tone="'active'"/>
+                </div>
+            </t>
+            <t t-foreach="queue.waiting" t-as="ticket" t-key="ticket.id">
+                <div class="co-list-row d-flex justify-content-between align-items-center gap-2">
+                    <span><span class="co-muted" t-esc="ticket.label"/> <strong t-esc="ticket.patient.name"/></span>
+                    <Badge t-if="ticket.state === 'called'" label="'Called'" tone="'info'"/>
+                    <span t-else="" class="co-muted small"><t t-esc="waited(ticket)"/> min</span>
+                </div>
+            </t>
+        </section>
+    </t>
+</templates>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Runs part of the demo schedule through check-in and the queue. -->
+<odoo>
+    <function model="careos.appointment" name="_careos_demo_queue"/>
+</odoo>
