@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_careos_encounter_doctor,careos.encounter doctor,model_careos_encounter,careos_base.group_careos_doctor,1,1,0,0
+access_careos_encounter_nurse,careos.encounter nurse,model_careos_encounter,careos_base.group_careos_nurse,1,1,0,0
+access_careos_diagnosis_doctor,careos.diagnosis doctor,model_careos_diagnosis,careos_base.group_careos_doctor,1,1,1,1
+access_careos_diagnosis_nurse,careos.diagnosis nurse,model_careos_diagnosis,careos_base.group_careos_nurse,1,0,0,0

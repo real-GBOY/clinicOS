@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_clinical.ClinicalHistory">
+        <div>
+            <EmptyState t-if="state.error" title="'Clinical history unavailable'" body="state.error" error="true"/>
+            <LoadingState t-elif="!state.rows" rows="3"/>
+            <EmptyState t-elif="!state.rows.length" title="'No encounters yet'" body="'Consultations you can access appear here.'"/>
+            <div t-else="" class="co-table-scroll">
+                <table class="co-table co-table--interactive">
+                    <thead><tr><th>Date</th><th>Provider</th><th>Diagnosis</th><th>Status</th></tr></thead>
+                    <tbody>
+                        <t t-foreach="state.rows" t-as="row" t-key="row.id">
+                            <tr t-on-click="() => this.open(row)" tabindex="0" t-on-keydown="(ev) => ev.key === 'Enter' and this.open(row)">
+                                <td class="co-table__primary" t-esc="date(row)"/>
+                                <td t-esc="row.provider.name"/>
+                                <td t-esc="row.diagnosis or '—'"/>
+                                <td><Badge label="row.state_label" tone="tone(row)"/></td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </t>
+</templates>

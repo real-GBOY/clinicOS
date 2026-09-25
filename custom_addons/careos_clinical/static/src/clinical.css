@@ -1,0 +1,116 @@
+/* Encounter workspace (prototype "Consultation"). */
+.co-link-button {
+    border: none;
+    background: none;
+    padding: 0;
+    color: var(--careos-primary);
+    font: inherit;
+    font-weight: inherit;
+    cursor: pointer;
+}
+.co-link-button:hover {
+    color: var(--careos-primary-hover);
+    text-decoration: underline;
+}
+.co-row-button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    border: none;
+    border-bottom: 1px solid var(--careos-divider);
+    background: none;
+    cursor: pointer;
+    color: var(--careos-text);
+}
+.co-row-button:hover {
+    background: var(--careos-surface-sunken);
+}
+.co-encounter__context {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+.co-encounter__vitals-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+.co-vitals {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 14px;
+}
+.co-vitals__card {
+    padding: 10px 12px;
+}
+.co-vitals__label {
+    font-size: 10.5px;
+    color: var(--careos-text-secondary);
+    text-transform: uppercase;
+    font-weight: 600;
+}
+.co-vitals__value {
+    font-size: 17px;
+    font-weight: 700;
+    margin-top: 2px;
+}
+.co-vitals__unit {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--careos-text-secondary);
+}
+.co-encounter__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 14px;
+}
+.co-encounter__wide {
+    grid-column: 1 / -1;
+}
+.co-encounter__text {
+    border-color: transparent;
+    background: var(--careos-surface-sunken);
+    font-size: 13px;
+    line-height: 1.5;
+    min-height: 64px;
+}
+.co-encounter__text--tall {
+    min-height: 110px;
+}
+.co-encounter__readonly {
+    font-size: 13px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+.co-dx-form {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+}
+.co-dx-form__code {
+    width: 110px;
+    flex-shrink: 0;
+}
+.co-encounter__saving {
+    position: fixed;
+    bottom: 16px;
+    right: 20px;
+    background: var(--careos-nav-bg);
+    color: #fff;
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: var(--careos-radius-sm);
+}
+@media (max-width: 900px) {
+    .co-encounter__grid {
+        grid-template-columns: 1fr;
+    }
+}
+@media (max-width: 600px) {
+    .co-vitals {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}

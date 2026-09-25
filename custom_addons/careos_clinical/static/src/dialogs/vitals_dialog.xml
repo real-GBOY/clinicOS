@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_clinical.VitalsDialog">
+        <CareModal title="'Vitals · ' + props.patientName" close="props.close">
+            <div t-if="state.loading" class="co-skeleton" style="height: 120px"/>
+            <form t-else="" class="co-form-grid" t-on-submit.prevent="save">
+                <t t-foreach="fields" t-as="field" t-key="field.name">
+                    <label class="co-field">
+                        <span class="co-field__label"><t t-esc="field.label"/> (<t t-esc="field.unit"/>)</span>
+                        <input class="co-input" type="number" inputmode="decimal" t-att-step="field.step"
+                               t-att-name="field.name" t-model="state.values[field.name]"/>
+                    </label>
+                </t>
+                <div t-if="state.error" class="co-alert co-alert--danger co-field--wide" role="alert" t-esc="state.error"/>
+                <button type="submit" class="d-none"/>
+            </form>
+            <t t-set-slot="footer">
+                <button type="button" class="co-btn co-btn--secondary" t-on-click="() => props.close()">Cancel</button>
+                <button type="button" class="co-btn co-btn--primary" name="save_vitals" t-att-disabled="state.saving or state.loading" t-on-click="save">Save vitals</button>
+            </t>
+        </CareModal>
+    </t>
+</templates>

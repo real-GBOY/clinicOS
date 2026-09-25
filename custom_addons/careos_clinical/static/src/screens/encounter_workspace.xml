@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_clinical.EncounterWorkspace">
+        <div class="co-encounter">
+            <div t-if="state.error" class="co-card">
+                <EmptyState title="'Encounter unavailable'" body="state.error" error="true"/>
+            </div>
+            <LoadingState t-elif="!e" rows="8"/>
+            <t t-else="">
+                <div class="co-page-header">
+                    <div>
+                        <h1 class="co-page-header__title d-flex align-items-center gap-2 flex-wrap">
+                            Consultation — <button type="button" class="co-link-button" name="open_patient" t-on-click="openPatient" t-esc="e.patient.name"/>
+                            <Badge label="e.state_label" tone="tone"/>
+                        </h1>
+                        <div class="co-page-header__subtitle"><t t-esc="subtitle"/></div>
+                    </div>
+                    <div class="co-page-header__actions">
+                        <t t-foreach="headerActions" t-as="action" t-key="action.id">
+                            <button type="button" class="co-btn co-btn--secondary" t-att-name="'enc_' + action.id"
+                                    t-on-click="() => this.runAction(action)" t-esc="action.label"/>
+                        </t>
+                        <button t-if="e.can_complete" type="button" class="co-btn co-btn--success" name="complete_encounter"
+                                t-att-disabled="state.completing" t-on-click="complete">Complete encounter</button>
+                    </div>
+                </div>
+
+                <div t-if="e.state === 'done'" class="co-alert co-alert--success mb-3">
+                    Signed off by <t t-esc="e.completed_by"/> · the record is now read-only.
+                </div>
+                <div t-if="e.patient_context.allergies.length or e.patient_context.conditions.length" class="co-encounter__context">
+                    <t t-foreach="e.patient_context.allergies" t-as="allergy" t-key="'a' + allergy.id">
+                        <Badge label="allergy.allergen + ' allergy'" tone="allergy.severity === 'mild' ? 'warning' : 'danger'"/>
+                    </t>
+                    <t t-foreach="e.patient_context.conditions" t-as="condition" t-key="'c' + condition.id">
+                        <Badge label="condition.name" tone="'warning'"/>
+                    </t>
+                </div>
+
+                <div class="co-encounter__vitals-head">
+                    <div class="co-section-label mb-0">Vitals</div>
+                    <button t-if="e.can_edit_vitals" type="button" class="co-btn co-btn--ghost co-btn--sm" name="record_vitals" t-on-click="recordVitals">
+                        <t t-esc="e.vitals_recorded_at ? 'Update vitals' : 'Record vitals'"/>
+                    </button>
+                </div>
+                <div class="co-vitals">
+                    <t t-foreach="e.vitals" t-as="vital" t-key="vital.key">
+                        <div class="co-card co-vitals__card" t-att-data-vital="vital.key">
+                            <div class="co-vitals__label" t-esc="vital.label"/>
+                            <div class="co-vitals__value">
+                                <t t-if="vital.value"><t t-esc="vital.value"/> <span class="co-vitals__unit" t-esc="vital.unit"/></t>
+                                <span t-else="" class="co-muted">—</span>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+
+                <div class="co-encounter__grid">
+                    <section class="co-card co-card--padded">
+                        <div class="co-section-label">Chief complaint</div>
+                        <textarea t-if="e.can_edit_clinical" class="co-textarea co-encounter__text" name="chief_complaint"
+                                  t-model="state.draft.chief_complaint" t-on-blur="() => this.saveField('chief_complaint')"
+                                  placeholder="Why the patient came in today"/>
+                        <div t-else="" class="co-encounter__readonly" t-esc="e.chief_complaint or '—'"/>
+                    </section>
+
+                    <section class="co-card co-card--padded">
+                        <div class="co-section-label">Diagnosis</div>
+                        <div t-if="!e.diagnoses.length" class="co-muted mb-2">No diagnosis recorded.</div>
+                        <t t-foreach="e.diagnoses" t-as="dx" t-key="dx.id">
+                            <div class="co-list-row d-flex justify-content-between align-items-center gap-2">
+                                <span>
+                                    <t t-esc="dx.description"/>
+                                    <span t-if="dx.code" class="co-muted"> — <t t-esc="dx.code"/></span>
+                                    <Badge t-if="dx.is_primary" label="'Primary'" tone="'info'"/>
+                                </span>
+                                <button t-if="e.can_edit_clinical" type="button" class="co-btn co-btn--ghost co-btn--sm" aria-label="Remove diagnosis"
+                                        t-on-click="() => this.removeDiagnosis(dx)">Remove</button>
+                            </div>
+                        </t>
+                        <form t-if="e.can_edit_clinical" class="co-dx-form" t-on-submit.prevent="addDiagnosis">
+                            <input class="co-input co-dx-form__code" name="dx_code" placeholder="Code (I10)" t-model="state.dx.code"/>
+                            <input class="co-input" name="dx_description" placeholder="Diagnosis" t-model="state.dx.description"/>
+                            <button type="submit" class="co-btn co-btn--secondary co-btn--sm" name="add_diagnosis">Add</button>
+                        </form>
+                    </section>
+
+                    <section class="co-card co-card--padded co-encounter__wide">
+                        <div class="co-section-label">Clinical notes</div>
+                        <textarea t-if="e.can_edit_clinical" class="co-textarea co-encounter__text co-encounter__text--tall" name="notes"
+                                  t-model="state.draft.notes" t-on-blur="() => this.saveField('notes')"
+                                  placeholder="History, examination, assessment"/>
+                        <div t-else="" class="co-encounter__readonly" t-esc="e.notes or '—'"/>
+                    </section>
+
+                    <section class="co-card co-card--padded">
+                        <div class="co-section-label">Plan</div>
+                        <textarea t-if="e.can_edit_clinical" class="co-textarea co-encounter__text" name="plan"
+                                  t-model="state.draft.plan" t-on-blur="() => this.saveField('plan')"
+                                  placeholder="Treatment, advice, referrals"/>
+                        <div t-else="" class="co-encounter__readonly" t-esc="e.plan or '—'"/>
+                    </section>
+
+                    <section class="co-card co-card--padded">
+                        <div class="co-section-label">Follow-up</div>
+                        <t t-if="e.can_edit_clinical">
+                            <div class="co-form-grid">
+                                <label class="co-field">
+                                    <span class="co-field__label">Review on</span>
+                                    <input type="date" class="co-input" name="follow_up_date" t-model="state.draft.follow_up_date"
+                                           t-on-change="() => this.saveField('follow_up_date')"/>
+                                </label>
+                                <label class="co-field">
+                                    <span class="co-field__label">Reason</span>
+                                    <input class="co-input" name="follow_up_reason" t-model="state.draft.follow_up_reason"
+                                           t-on-blur="() => this.saveField('follow_up_reason')" placeholder="e.g. BP check"/>
+                                </label>
+                            </div>
+                        </t>
+                        <div t-elif="e.follow_up_date" class="co-encounter__readonly">
+                            <t t-esc="formatDate(e.follow_up_date)"/><t t-if="e.follow_up_reason"> · <t t-esc="e.follow_up_reason"/></t>
+                        </div>
+                        <div t-else="" class="co-muted">No follow-up planned.</div>
+                    </section>
+                </div>
+
+                <t t-foreach="sections" t-as="section" t-key="section.id">
+                    <t t-component="section.Component" encounter="e" reload.bind="load"/>
+                </t>
+
+                <section t-if="e.previous_encounters.length" class="co-card co-card--padded mt-3">
+                    <div class="co-section-label">Previous encounters</div>
+                    <t t-foreach="e.previous_encounters" t-as="prev" t-key="prev.id">
+                        <button type="button" class="co-list-row co-row-button" t-on-click="() => this.openEncounter(prev)">
+                            <strong t-esc="formatDate(prev.date)"/> · <t t-esc="prev.provider.name"/>
+                            <span t-if="prev.diagnosis" class="co-muted"> · <t t-esc="prev.diagnosis"/></span>
+                        </button>
+                    </t>
+                </section>
+                <div t-if="state.saving" class="co-encounter__saving" role="status">Saving…</div>
+            </t>
+        </div>
+    </t>
+</templates>

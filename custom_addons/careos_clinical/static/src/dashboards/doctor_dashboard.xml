@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_clinical.DoctorDashboard">
+        <div class="co-dashboard">
+            <div t-if="state.error and !d" class="co-card"><EmptyState title="'Workspace unavailable'" body="state.error" error="true"/></div>
+            <LoadingState t-elif="!d" rows="6"/>
+            <t t-else="">
+                <PageHeader title="'Doctor Workspace'" subtitle="subtitle"/>
+                <div class="co-dashboard__grid">
+                    <section class="co-card co-dashboard__today" aria-labelledby="co-doc-schedule">
+                        <div class="co-card__title co-dashboard__card-title" id="co-doc-schedule">Today's schedule</div>
+                        <EmptyState t-if="!d.schedule.length" title="'No appointments today'" body="'Your bookings for today appear here.'"/>
+                        <div t-else="" class="co-table-scroll">
+                            <table class="co-table">
+                                <thead><tr><th>Time</th><th>Patient</th><th class="co-hide-sm">Reason</th><th>Status</th><th/></tr></thead>
+                                <tbody>
+                                    <t t-foreach="d.schedule" t-as="appt" t-key="appt.id">
+                                        <tr>
+                                            <td t-esc="time(appt)"/>
+                                            <td class="co-table__primary" t-esc="appt.patient.name"/>
+                                            <td class="co-hide-sm" t-esc="appt.type.name"/>
+                                            <td><Badge label="appt.state_label" tone="tone(appt)"/></td>
+                                            <td class="text-end">
+                                                <button type="button" class="co-link-button" name="open_visit" t-on-click="() => this.open(appt)">Open →</button>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                    <div class="co-dashboard__side">
+                        <t t-foreach="panels" t-as="panel" t-key="panel.id">
+                            <t t-component="panel.Component" dashboard="d" reload.bind="load"/>
+                        </t>
+                        <section t-if="d.unsigned.length" class="co-card co-card--padded">
+                            <div class="co-card__title">Unsigned encounters</div>
+                            <t t-foreach="d.unsigned" t-as="row" t-key="row.id">
+                                <button type="button" class="co-list-row co-row-button d-flex justify-content-between" t-on-click="() => this.openEncounter(row)">
+                                    <span><strong t-esc="row.patient.name"/> <span class="co-muted">· <t t-esc="due(row.date)"/></span></span>
+                                    <Badge label="'Sign off'" tone="'warning'"/>
+                                </button>
+                            </t>
+                        </section>
+                        <section class="co-card co-card--padded">
+                            <div class="co-card__title">Follow-ups due</div>
+                            <div t-if="!d.follow_ups.length" class="co-muted co-list-row">No follow-ups due this week.</div>
+                            <t t-foreach="d.follow_ups" t-as="row" t-key="row.encounter_id">
+                                <button type="button" class="co-list-row co-row-button" t-on-click="() => this.openPatient(row)">
+                                    <span class="d-block fw-semibold" t-esc="row.patient.name"/>
+                                    <span class="d-block co-muted"><t t-esc="row.reason or 'Review'"/> · due <t t-esc="due(row.due)"/></span>
+                                </button>
+                            </t>
+                        </section>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>

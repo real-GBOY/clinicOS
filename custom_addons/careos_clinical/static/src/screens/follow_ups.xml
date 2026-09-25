@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_clinical.FollowUps">
+        <div class="co-follow-ups">
+            <PageHeader title="'Follow-ups'" subtitle="'Reviews due in the next 7 days or overdue, not yet booked'"/>
+            <div t-if="state.error" class="co-card"><EmptyState title="'Follow-ups unavailable'" body="state.error" error="true"/></div>
+            <LoadingState t-elif="!state.rows" rows="4"/>
+            <div t-elif="!state.rows.length" class="co-card">
+                <EmptyState title="'No follow-ups due'" body="'Follow-ups planned in encounters appear here until they are booked.'"/>
+            </div>
+            <div t-else="" class="co-card co-table-scroll">
+                <table class="co-table">
+                    <thead><tr><th>Patient</th><th>Reason</th><th>Due</th><th class="co-hide-sm">Provider</th><th/></tr></thead>
+                    <tbody>
+                        <t t-foreach="state.rows" t-as="row" t-key="row.encounter_id">
+                            <tr>
+                                <td><button type="button" class="co-link-button co-table__primary" t-on-click="() => this.openPatient(row)" t-esc="row.patient.name"/></td>
+                                <td t-esc="row.reason or '—'"/>
+                                <td>
+                                    <t t-esc="due(row)"/>
+                                    <Badge t-if="row.overdue" label="'Overdue'" tone="'danger'"/>
+                                </td>
+                                <td class="co-hide-sm" t-esc="row.provider.name"/>
+                                <td class="text-end">
+                                    <button t-if="canBook" type="button" class="co-btn co-btn--primary co-btn--sm" name="book_follow_up"
+                                            t-on-click="() => this.book(row)">Book follow-up</button>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </t>
+</templates>

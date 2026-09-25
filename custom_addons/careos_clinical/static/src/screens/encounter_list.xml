@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_clinical.EncounterList">
+        <div class="co-encounter-list">
+            <PageHeader title="'Encounters'" subtitle="'Consultation records at this branch'"/>
+            <div class="co-directory-toolbar">
+                <div class="co-search co-directory-toolbar__search">
+                    <span class="co-search__icon" aria-hidden="true">⌕</span>
+                    <input type="search" class="co-input" placeholder="Patient name, patient ID or ENC reference"
+                           aria-label="Search encounters" t-att-value="state.query" t-on-input="onQuery"/>
+                </div>
+                <div class="co-segmented" role="group" aria-label="Status">
+                    <t t-foreach="filters" t-as="f" t-key="f[0]">
+                        <button type="button" t-attf-class="co-segmented__item {{state.filter === f[0] ? 'co-segmented__item--active' : ''}}"
+                                t-on-click="() => this.setFilter(f[0])" t-esc="f[1]"/>
+                    </t>
+                </div>
+            </div>
+            <div t-if="state.error" class="co-card"><EmptyState title="'Encounters unavailable'" body="state.error" error="true"/></div>
+            <LoadingState t-elif="!state.rows" rows="5"/>
+            <div t-elif="!state.rows.length" class="co-card">
+                <EmptyState title="'No encounters'" body="'Encounters open automatically when patients are checked in.'"/>
+            </div>
+            <div t-else="" class="co-card co-table-scroll">
+                <table class="co-table co-table--interactive">
+                    <thead><tr><th>When</th><th>Patient</th><th class="co-hide-sm">Provider</th><th class="co-hide-md">Diagnosis</th><th>Status</th></tr></thead>
+                    <tbody>
+                        <t t-foreach="state.rows" t-as="row" t-key="row.id">
+                            <tr t-on-click="() => this.open(row)" tabindex="0" t-on-keydown="(ev) => ev.key === 'Enter' and this.open(row)">
+                                <td t-esc="when(row)"/>
+                                <td><div class="co-table__primary" t-esc="row.patient.name"/><div class="co-table__sub" t-esc="row.name"/></td>
+                                <td class="co-hide-sm" t-esc="row.provider.name"/>
+                                <td class="co-hide-md" t-esc="row.diagnosis or '—'"/>
+                                <td><Badge label="row.state_label" tone="tone(row)"/></td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </t>
+</templates>
