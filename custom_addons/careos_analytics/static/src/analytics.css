@@ -1,0 +1,55 @@
+/* Bars: one hue for magnitude, 4px rounded ends, direct value labels in text ink. */
+.co-analytics-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+}
+.co-bars__row {
+    margin-bottom: 10px;
+}
+.co-bars__head {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 12px;
+    margin-bottom: 4px;
+}
+.co-bars__name {
+    font-weight: 600;
+}
+.co-bars__value {
+    color: var(--careos-text-secondary);
+    white-space: nowrap;
+}
+.co-bars__track {
+    height: 7px;
+    background: oklch(94% 0.004 240);
+    border-radius: 4px;
+}
+.co-bars__fill {
+    height: 7px;
+    border-radius: 4px;
+    background: var(--careos-primary);
+    min-width: 2px;
+    transition: width var(--careos-motion);
+}
+.co-bars__fill--flag {
+    background: var(--careos-danger);
+}
+.co-metric--button {
+    text-align: left;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+    width: 100%;
+    transition: border-color var(--careos-motion-fast);
+}
+.co-metric--button:hover {
+    border-color: var(--careos-border-strong);
+}
+@media (max-width: 900px) {
+    .co-analytics-grid {
+        grid-template-columns: 1fr;
+    }
+}

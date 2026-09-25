@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_analytics.BarList">
+        <div class="co-bars" role="list">
+            <div t-if="!props.rows.length" class="co-muted co-list-row" t-esc="props.emptyText or 'No data for this period.'"/>
+            <t t-foreach="props.rows" t-as="row" t-key="row.name">
+                <div class="co-bars__row" role="listitem" t-att-title="tooltip(row)" t-att-data-bar="row.name">
+                    <div class="co-bars__head">
+                        <span class="co-bars__name">
+                            <t t-esc="row.name"/>
+                            <span t-if="row.flag" class="co-badge co-badge--danger ms-1" t-esc="props.flagLabel or 'Elevated'"/>
+                        </span>
+                        <span class="co-bars__value" t-esc="row.label"/>
+                    </div>
+                    <div class="co-bars__track">
+                        <div t-attf-class="co-bars__fill {{row.flag ? 'co-bars__fill--flag' : ''}}" t-attf-style="width: {{row.pct}}%"/>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+
+    <t t-name="careos_analytics.ManagerDashboard">
+        <div class="co-dashboard">
+            <div t-if="state.error" class="co-card"><EmptyState title="'Workspace unavailable'" body="state.error" error="true"/></div>
+            <LoadingState t-elif="!state.d" rows="6"/>
+            <t t-else="">
+                <PageHeader title="'Manager Workspace'" subtitle="state.d.branch + ' · ' + state.d.period"/>
+                <div class="co-metric-grid">
+                    <t t-foreach="state.d.kpis" t-as="kpi" t-key="kpi.key">
+                        <button type="button" class="co-card co-card--padded co-metric co-metric--button" t-att-data-kpi="kpi.key" t-on-click="() => this.open(kpi)">
+                            <div class="co-metric__label" t-esc="kpi.label"/>
+                            <div class="co-metric__value" t-esc="kpi.value"/>
+                            <div t-attf-class="co-metric__delta {{kpi.delta.tone ? 'co-metric__delta--' + kpi.delta.tone : ''}}" t-esc="kpi.delta.text"/>
+                        </button>
+                    </t>
+                </div>
+                <div t-if="state.d.alert" class="co-alert co-alert--warning mb-3 d-flex justify-content-between align-items-center gap-2 flex-wrap" role="status">
+                    <span><strong>Operational alert:</strong> <t t-esc="state.d.alert.text"/></span>
+                    <button type="button" class="co-btn co-btn--ghost co-btn--sm" name="investigate" t-on-click="investigate">Investigate →</button>
+                </div>
+                <div class="co-analytics-grid">
+                    <section class="co-card co-card--padded" aria-labelledby="co-dept-rev">
+                        <div class="co-card__title" id="co-dept-rev">Revenue by department</div>
+                        <BarList rows="state.d.dept_revenue" emptyText="'No posted invoices this month.'"/>
+                    </section>
+                    <section class="co-card co-card--padded" aria-labelledby="co-util">
+                        <div class="co-card__title" id="co-util">Doctor utilization</div>
+                        <div class="co-muted small mb-2">Booked time vs. branch opening hours, month to date</div>
+                        <BarList rows="state.d.utilization"/>
+                    </section>
+                </div>
+            </t>
+        </div>
+    </t>
+
+    <t t-name="careos_analytics.AnalyticsScreen">
+        <div>
+            <PageHeader title="'Analytics'" subtitle="subtitle">
+                <t t-set-slot="actions">
+                    <select class="co-select co-filter" aria-label="Period" t-on-change="setDays">
+                        <option value="7" t-att-selected="state.days === 7">Last 7 days</option>
+                        <option value="30" t-att-selected="state.days === 30">Last 30 days</option>
+                        <option value="90" t-att-selected="state.days === 90">Last 90 days</option>
+                    </select>
+                </t>
+            </PageHeader>
+            <div class="co-segmented mb-3" role="tablist" aria-label="Analytics">
+                <t t-foreach="tabs" t-as="tab" t-key="tab[0]">
+                    <button type="button" role="tab" t-att-data-tab="tab[0]"
+                            t-attf-class="co-segmented__item {{state.tab === tab[0] ? 'co-segmented__item--active' : ''}}"
+                            t-on-click="() => this.setTab(tab[0])" t-esc="tab[1]"/>
+                </t>
+            </div>
+            <div t-if="state.error" class="co-card"><EmptyState title="'Analytics unavailable'" body="state.error" error="true"/></div>
+            <LoadingState t-elif="!state.data" rows="5"/>
+            <div t-elif="state.tab === 'operations'" class="co-analytics-grid">
+                <section class="co-card co-card--padded">
+                    <div class="co-card__title">No-show rate by department</div>
+                    <div class="co-muted small mb-2">Branch average <t t-esc="state.data.branch_no_show"/>% · flagged at 2× the average</div>
+                    <BarList rows="state.data.no_show" flagLabel="'2× average'"/>
+                </section>
+                <section class="co-card co-card--padded">
+                    <div class="co-card__title">Average wait time by department (min)</div>
+                    <div class="co-muted small mb-2">Check-in to consultation start</div>
+                    <BarList rows="state.data.wait" emptyText="'No completed waits in this period.'"/>
+                </section>
+            </div>
+            <section t-elif="state.tab === 'finance'" class="co-card co-card--padded">
+                <div class="co-card__title">Revenue by service line</div>
+                <div class="co-muted small mb-2">Posted invoices net of refunds · total <t t-esc="state.data.total"/></div>
+                <BarList rows="state.data.revenue_by_service" emptyText="'No posted invoices in this period.'"/>
+            </section>
+            <section t-else="" class="co-card co-card--padded">
+                <div class="co-card__title">New vs. returning patients (weekly)</div>
+                <table class="co-table">
+                    <thead><tr><th>Week</th><th class="text-end">New</th><th class="text-end">Returning</th></tr></thead>
+                    <tbody>
+                        <t t-foreach="state.data.patient_growth" t-as="week" t-key="week.week">
+                            <tr><td t-esc="week.week"/><td class="text-end fw-bold" t-esc="week.new"/><td class="text-end fw-bold" t-esc="week.returning"/></tr>
+                        </t>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+    </t>
+</templates>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Eight weeks of synthetic visit history (imported through the system history path). -->
+<odoo>
+    <function model="careos.analytics" name="_careos_demo_history"/>
+    <function model="careos.analytics" name="_careos_cron_insights"/>
+</odoo>
