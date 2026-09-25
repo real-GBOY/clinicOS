@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_patients.PatientDocuments">
+        <div class="co-p360-documents">
+            <div class="co-p360-section__head">
+                <div class="co-section-label">Documents</div>
+                <t t-if="props.profile.can_upload">
+                    <input t-ref="fileInput" type="file" multiple="multiple" class="d-none" name="patient_document" t-on-change="onFileChosen"/>
+                    <button type="button" class="co-btn co-btn--secondary co-btn--sm" t-att-disabled="state.uploading" t-on-click="pickFile"
+                            t-esc="state.uploading ? 'Uploading…' : 'Upload document'"/>
+                </t>
+            </div>
+            <EmptyState t-if="state.error" title="'Documents unavailable'" body="state.error" error="true"/>
+            <LoadingState t-elif="!state.documents" rows="3"/>
+            <EmptyState t-elif="!state.documents.length" title="'No documents yet'"
+                        body="'Insurance cards, IDs, referral letters and outside reports attached to this patient appear here.'"/>
+            <div t-else="" class="co-table-scroll">
+                <table class="co-table">
+                    <thead>
+                        <tr><th>Document</th><th class="co-hide-sm">Uploaded by</th><th>Date</th><th class="co-hide-sm">Size</th><th/></tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="state.documents" t-as="doc" t-key="doc.id">
+                            <tr>
+                                <td class="co-table__primary" t-esc="doc.name"/>
+                                <td class="co-hide-sm" t-esc="doc.uploaded_by"/>
+                                <td t-esc="formatDate(doc.uploaded_on)"/>
+                                <td class="co-hide-sm" t-esc="size(doc)"/>
+                                <td class="text-end"><a t-att-href="downloadUrl(doc)" class="fw-semibold">Download</a></td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </t>
+</templates>

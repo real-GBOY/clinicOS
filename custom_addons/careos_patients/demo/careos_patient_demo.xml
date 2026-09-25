@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Synthetic patients for development and demos. Not real people; all names and phone numbers are fictitious. -->
+<odoo>
+    <record id="patient_ahmed_hassan" model="careos.patient">
+        <field name="name">Ahmed Hassan</field>
+        <field name="date_of_birth" eval="(DateTime.today() - relativedelta(years=42, days=37)).strftime('%Y-%m-%d')"/>
+        <field name="sex">male</field>
+        <field name="phone">+20 100 555 0187</field>
+        <field name="city">Nasr City</field>
+        <field name="country_id" ref="base.eg"/>
+        <field name="branch_id" ref="careos_base.branch_cairo"/>
+        <field name="insurance_provider">Al-Amana Health</field>
+        <field name="insurance_policy_number">AL-700100</field>
+    </record>
+    <record id="patient_mona_youssef" model="careos.patient">
+        <field name="name">Mona Youssef</field>
+        <field name="date_of_birth" eval="(DateTime.today() - relativedelta(years=35, days=74)).strftime('%Y-%m-%d')"/>
+        <field name="sex">female</field>
+        <field name="phone">+20 122 555 9021</field>
+        <field name="city">Heliopolis</field>
+        <field name="country_id" ref="base.eg"/>
+        <field name="branch_id" ref="careos_base.branch_cairo"/>
+    </record>
+    <record id="patient_karim_adel" model="careos.patient">
+        <field name="name">Karim Adel</field>
+        <field name="date_of_birth" eval="(DateTime.today() - relativedelta(years=28, days=111)).strftime('%Y-%m-%d')"/>
+        <field name="sex">male</field>
+        <field name="phone">+20 111 555 7743</field>
+        <field name="city">Maadi</field>
+        <field name="country_id" ref="base.eg"/>
+        <field name="branch_id" ref="careos_base.branch_cairo"/>
+    </record>
+    <record id="patient_sara_ibrahim" model="careos.patient">
+        <field name="name">Sara Ibrahim</field>
+        <field name="date_of_birth" eval="(DateTime.today() - relativedelta(years=51, days=148)).strftime('%Y-%m-%d')"/>
+        <field name="sex">female</field>
+        <field name="phone">+20 106 555 3312</field>
+        <field name="city">Dokki</field>
+        <field name="country_id" ref="base.eg"/>
+        <field name="branch_id" ref="careos_base.branch_cairo"/>
+        <field name="insurance_provider">Misr Care</field>
+        <field name="insurance_policy_number">MI-700211</field>
+    </record>
+    <record id="patient_omar_nabil" model="careos.patient">
+        <field name="name">Omar Nabil</field>
+        <field name="date_of_birth" eval="(DateTime.today() - relativedelta(years=33, days=185)).strftime('%Y-%m-%d')"/>
+        <field name="sex">male</field>
+        <field name="phone">+20 128 555 5560</field>
+        <field name="city">Zamalek</field>
+        <field name="country_id" ref="base.eg"/>
+        <field name="branch_id" ref="careos_base.branch_cairo"/>
+    </record>
+    <record id="patient_laila_hassan" model="careos.patient">
+        <field name="name">Laila Hassan</field>
+        <field name="date_of_birth" eval="(DateTime.today() - relativedelta(years=64, days=222)).strftime('%Y-%m-%d')"/>
+        <field name="sex">female</field>
+        <field name="phone">+20 100 555 4410</field>
+        <field name="city">Nasr City</field>
+        <field name="country_id" ref="base.eg"/>
+        <field name="branch_id" ref="careos_base.branch_cairo"/>
+        <field name="insurance_provider">Al-Amana Health</field>
+        <field name="insurance_policy_number">AL-700285</field>
+    </record>
+    <record id="patient_nadia_farouk" model="careos.patient">
+        <field name="name">Nadia Farouk</field>
+        <field name="date_of_birth" eval="(DateTime.today() - relativedelta(years=58, days=259)).strftime('%Y-%m-%d')"/>
+        <field name="sex">female</field>
+        <field name="phone">+20 122 555 2290</field>
+        <field name="city">Smouha</field>
+        <field name="country_id" ref="base.eg"/>
+        <field name="branch_id" ref="careos_base.branch_alexandria"/>
+    </record>
+    <record id="patient_hany_kamel" model="careos.patient">
+        <field name="name">Hany Kamel</field>
+        <field name="date_of_birth" eval="(DateTime.today() - relativedelta(years=47, days=296)).strftime('%Y-%m-%d')"/>
+        <field name="sex">male</field>
+        <field name="phone">+20 111 555 8834</field>
+        <field name="city">Sidi Gaber</field>
+        <field name="country_id" ref="base.eg"/>
+        <field name="branch_id" ref="careos_base.branch_alexandria"/>
+        <field name="insurance_provider">Misr Care</field>
+        <field name="insurance_policy_number">MI-700359</field>
+    </record>
+    <record id="patient_youssef_adel" model="careos.patient">
+        <field name="name">Youssef Adel</field>
+        <field name="date_of_birth" eval="(DateTime.today() - relativedelta(years=9, days=333)).strftime('%Y-%m-%d')"/>
+        <field name="sex">male</field>
+        <field name="phone">+20 106 555 1175</field>
+        <field name="city">Shebin El Kom</field>
+        <field name="country_id" ref="base.eg"/>
+        <field name="branch_id" ref="careos_base.branch_menoufia"/>
+    </record>
+
+    <record id="patient_ahmed_hassan_allergy_penicillin" model="careos.patient.allergy">
+        <field name="patient_id" ref="patient_ahmed_hassan"/>
+        <field name="allergen">Penicillin</field>
+        <field name="severity">severe</field>
+        <field name="reaction">Hives, facial swelling</field>
+    </record>
+    <record id="patient_ahmed_hassan_condition_htn" model="careos.patient.condition">
+        <field name="patient_id" ref="patient_ahmed_hassan"/>
+        <field name="name">Essential hypertension</field>
+        <field name="code">I10</field>
+        <field name="status">controlled</field>
+        <field name="onset_date" eval="(DateTime.today() - relativedelta(years=3)).strftime('%Y-%m-%d')"/>
+    </record>
+    <record id="patient_ahmed_hassan_contact_wife" model="careos.patient.contact">
+        <field name="patient_id" ref="patient_ahmed_hassan"/>
+        <field name="name">Rania Hassan</field>
+        <field name="relationship">spouse</field>
+        <field name="phone">+20 100 555 0190</field>
+    </record>
+    <record id="patient_sara_ibrahim_condition_t2d" model="careos.patient.condition">
+        <field name="patient_id" ref="patient_sara_ibrahim"/>
+        <field name="name">Type 2 diabetes mellitus</field>
+        <field name="code">E11</field>
+        <field name="status">active</field>
+        <field name="onset_date" eval="(DateTime.today() - relativedelta(years=6)).strftime('%Y-%m-%d')"/>
+    </record>
+    <record id="patient_sara_ibrahim_allergy_sulfa" model="careos.patient.allergy">
+        <field name="patient_id" ref="patient_sara_ibrahim"/>
+        <field name="allergen">Sulfonamides</field>
+        <field name="severity">moderate</field>
+        <field name="reaction">Rash</field>
+    </record>
+    <record id="patient_youssef_adel_contact_father" model="careos.patient.contact">
+        <field name="patient_id" ref="patient_youssef_adel"/>
+        <field name="name">Adel Mahmoud</field>
+        <field name="relationship">parent</field>
+        <field name="phone">+20 106 555 1170</field>
+    </record>
+</odoo>

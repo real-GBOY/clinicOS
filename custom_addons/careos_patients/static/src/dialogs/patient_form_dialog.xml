@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_patients.PatientFormDialog">
+        <CareModal title="title" close="props.close" large="true">
+            <form class="co-form-grid" t-on-submit.prevent="save" autocomplete="off">
+                <div class="co-form-section">Identity</div>
+                <label t-attf-class="co-field co-field--wide {{state.errors.name ? 'co-field--error' : ''}}">
+                    <span class="co-field__label">Full name<span class="co-required">*</span></span>
+                    <input class="co-input" name="name" t-model="state.values.name" t-on-change="onIdentityChange" placeholder="First and last name"/>
+                    <span t-if="state.errors.name" class="co-field__error" t-esc="state.errors.name"/>
+                </label>
+                <label t-attf-class="co-field {{state.errors.date_of_birth ? 'co-field--error' : ''}}">
+                    <span class="co-field__label">Date of birth</span>
+                    <input class="co-input" type="date" name="date_of_birth" t-att-max="today" t-model="state.values.date_of_birth"/>
+                    <span t-if="state.errors.date_of_birth" class="co-field__error" t-esc="state.errors.date_of_birth"/>
+                </label>
+                <label class="co-field">
+                    <span class="co-field__label">Sex</span>
+                    <select class="co-select" name="sex" t-model="state.values.sex">
+                        <option value="">—</option>
+                        <option value="female" t-att-selected="state.values.sex === 'female'">Female</option>
+                        <option value="male" t-att-selected="state.values.sex === 'male'">Male</option>
+                        <option value="other" t-att-selected="state.values.sex === 'other'">Other</option>
+                    </select>
+                </label>
+                <label class="co-field">
+                    <span class="co-field__label">National ID</span>
+                    <input class="co-input" name="national_id" t-model="state.values.national_id" t-on-change="onIdentityChange"/>
+                </label>
+                <label class="co-field">
+                    <span class="co-field__label">Home branch</span>
+                    <select class="co-select" name="branch_id" t-model="state.values.branch_id">
+                        <option value="">—</option>
+                        <t t-foreach="props.branches" t-as="branch" t-key="branch.id">
+                            <option t-att-value="branch.id" t-att-selected="'' + branch.id === state.values.branch_id" t-esc="branch.name"/>
+                        </t>
+                    </select>
+                </label>
+
+                <div class="co-form-section">Contact</div>
+                <label t-attf-class="co-field {{state.errors.phone ? 'co-field--error' : ''}}">
+                    <span class="co-field__label">Phone</span>
+                    <input class="co-input" type="tel" name="phone" t-model="state.values.phone" t-on-change="onIdentityChange" placeholder="+20 1xx xxx xxxx"/>
+                    <span t-if="state.errors.phone" class="co-field__error" t-esc="state.errors.phone"/>
+                </label>
+                <label t-attf-class="co-field {{state.errors.email ? 'co-field--error' : ''}}">
+                    <span class="co-field__label">Email</span>
+                    <input class="co-input" type="email" name="email" t-model="state.values.email"/>
+                    <span t-if="state.errors.email" class="co-field__error" t-esc="state.errors.email"/>
+                </label>
+                <label class="co-field">
+                    <span class="co-field__label">Street</span>
+                    <input class="co-input" name="street" t-model="state.values.street"/>
+                </label>
+                <label class="co-field">
+                    <span class="co-field__label">City</span>
+                    <input class="co-input" name="city" t-model="state.values.city"/>
+                </label>
+
+                <div class="co-form-section">Insurance</div>
+                <label class="co-field">
+                    <span class="co-field__label">Provider</span>
+                    <input class="co-input" name="insurance_provider" t-model="state.values.insurance_provider"/>
+                </label>
+                <label class="co-field">
+                    <span class="co-field__label">Policy number</span>
+                    <input class="co-input" name="insurance_policy_number" t-model="state.values.insurance_policy_number"/>
+                </label>
+
+                <div t-if="state.duplicates.length" class="co-alert co-alert--warning co-field--wide" role="alert">
+                    <strong>Possible duplicate.</strong> These patients match the name, phone or national ID you entered.
+                    Open the existing record, or register anyway if this is a different person.
+                    <div class="mt-2">
+                        <t t-foreach="state.duplicates" t-as="dup" t-key="dup.id">
+                            <div class="d-flex justify-content-between align-items-center co-list-row">
+                                <span>
+                                    <strong t-esc="dup.name"/> <span class="co-muted">· <t t-esc="dup.ref"/><t t-if="dup.phone"> · <t t-esc="dup.phone"/></t><t t-if="dup.date_of_birth"> · born <t t-esc="formatDate(dup.date_of_birth)"/></t></span>
+                                </span>
+                                <button type="button" class="co-btn co-btn--ghost co-btn--sm" t-on-click="() => this.openExisting(dup)">Open</button>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+                <div t-if="state.serverError" class="co-alert co-alert--danger co-field--wide" role="alert" t-esc="state.serverError"/>
+                <button type="submit" class="d-none"/>
+            </form>
+            <t t-set-slot="footer">
+                <button type="button" class="co-btn co-btn--secondary" t-on-click="() => props.close()">Cancel</button>
+                <button type="button" class="co-btn co-btn--primary" name="save_patient" t-att-disabled="state.saving" t-on-click="save" t-esc="submitLabel"/>
+            </t>
+        </CareModal>
+    </t>
+</templates>

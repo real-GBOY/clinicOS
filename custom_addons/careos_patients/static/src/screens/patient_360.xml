@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_patients.Patient360">
+        <div class="co-patient-360">
+            <div t-if="state.error" class="co-card">
+                <EmptyState title="'Patient record unavailable'" body="state.error" error="true">
+                    <button type="button" class="co-btn co-btn--secondary co-btn--sm" t-on-click="backToDirectory">Back to patients</button>
+                </EmptyState>
+            </div>
+            <LoadingState t-elif="!state.profile" rows="8"/>
+            <div t-else="" class="co-card co-p360" t-att-data-patient-id="state.profile.id">
+                <div class="co-p360__header">
+                    <div class="co-p360__identity">
+                        <Avatar name="state.profile.name" large="true"/>
+                        <div class="min-w-0">
+                            <div class="co-p360__name">
+                                <t t-esc="state.profile.name"/>
+                                <Badge t-if="!state.profile.active" label="'Archived'" tone="'neutral'"/>
+                            </div>
+                            <div class="co-p360__meta"><span class="co-p360__ref" t-esc="state.profile.ref"/> · <t t-esc="metaLine"/></div>
+                        </div>
+                    </div>
+                    <div class="co-p360__header-side">
+                        <div class="co-p360__badges">
+                            <t t-foreach="headerBadges" t-as="badge" t-key="badge.key">
+                                <Badge label="badge.label" tone="badge.tone"/>
+                            </t>
+                        </div>
+                        <button t-if="state.profile.can_edit" type="button" class="co-btn co-btn--secondary co-btn--sm" name="edit_patient" t-on-click="edit">Edit</button>
+                    </div>
+                </div>
+                <div class="co-tabs co-p360__tabs" role="tablist">
+                    <t t-foreach="tabs" t-as="tab" t-key="tab.id">
+                        <button type="button" role="tab" t-att-data-tab="tab.id"
+                                t-attf-class="co-tabs__tab {{activeTab.id === tab.id ? 'co-tabs__tab--active' : ''}}"
+                                t-att-aria-selected="activeTab.id === tab.id ? 'true' : 'false'"
+                                t-on-click="() => this.state.tab = tab.id">
+                            <t t-esc="tab.label"/><span t-if="tab.countValue" class="co-tabs__count" t-esc="tab.countValue"/>
+                        </button>
+                    </t>
+                </div>
+                <div class="co-p360__body" role="tabpanel">
+                    <t t-component="activeTab.Component" t-key="activeTab.id" profile="state.profile" reload.bind="load"/>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

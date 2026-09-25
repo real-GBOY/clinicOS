@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_patients.PatientDirectory">
+        <div class="co-patient-directory">
+            <PageHeader title="'Patients'" subtitle="subtitle">
+                <t t-set-slot="actions">
+                    <button t-if="state.canCreate" type="button" class="co-btn co-btn--primary" name="register_patient" t-on-click="register">+ Register patient</button>
+                </t>
+            </PageHeader>
+
+            <div class="co-directory-toolbar">
+                <div class="co-search co-directory-toolbar__search">
+                    <span class="co-search__icon" aria-hidden="true">⌕</span>
+                    <input type="search" class="co-input" placeholder="Search by name, patient ID, phone or national ID"
+                           aria-label="Search patients" t-att-value="state.query" t-on-input="onSearchInput"/>
+                </div>
+                <div t-if="branch" class="co-segmented" role="group" aria-label="Branch scope">
+                    <button type="button" t-attf-class="co-segmented__item {{state.scope === 'branch' ? 'co-segmented__item--active' : ''}}"
+                            t-on-click="() => this.setScope('branch')" t-esc="branch.name"/>
+                    <button type="button" t-attf-class="co-segmented__item {{state.scope === 'all' ? 'co-segmented__item--active' : ''}}"
+                            t-on-click="() => this.setScope('all')">All branches</button>
+                </div>
+                <button type="button" class="co-btn co-btn--ghost co-btn--sm" t-on-click="toggleArchived"
+                        t-esc="state.archived ? 'Show active' : 'Show archived'"/>
+            </div>
+
+            <LoadingState t-if="state.loading and !state.records.length" rows="6"/>
+            <div t-elif="state.error" class="co-card">
+                <EmptyState title="'Patients could not be loaded'" body="state.error" error="true">
+                    <button type="button" class="co-btn co-btn--secondary co-btn--sm" t-on-click="() => this.load()">Try again</button>
+                </EmptyState>
+            </div>
+            <div t-elif="!state.records.length" class="co-card">
+                <EmptyState t-if="state.query.trim()" title="'No matching patients'"
+                            body="'Check the spelling, or search by patient ID or phone number instead.'"/>
+                <EmptyState t-else="" title="state.archived ? 'No archived patients' : 'No patients registered yet'"
+                            body="state.archived ? '' : 'Registered patients will appear here.'">
+                    <button t-if="state.canCreate and !state.archived" type="button" class="co-btn co-btn--primary co-btn--sm" t-on-click="register">+ Register patient</button>
+                </EmptyState>
+            </div>
+            <div t-else="" class="co-card" t-att-aria-busy="state.loading ? 'true' : 'false'">
+                <div class="co-table-scroll">
+                    <table class="co-table co-table--interactive">
+                        <thead>
+                            <tr>
+                                <th>Patient</th>
+                                <th>Age / Sex</th>
+                                <th>Phone</th>
+                                <th class="co-hide-sm">Home branch</th>
+                                <th class="co-hide-sm">Insurance</th>
+                                <th class="co-hide-md">Registered</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="state.records" t-as="record" t-key="record.id">
+                                <tr t-on-click="() => this.open(record)" tabindex="0" t-on-keydown="(ev) => ev.key === 'Enter' and this.open(record)">
+                                    <td>
+                                        <div class="co-table__primary" t-esc="record.name"/>
+                                        <div class="co-table__sub" t-esc="record.ref"/>
+                                    </td>
+                                    <td t-esc="ageSex(record)"/>
+                                    <td t-esc="record.phone or '—'"/>
+                                    <td class="co-hide-sm" t-esc="record.branch_id ? record.branch_id.display_name : '—'"/>
+                                    <td class="co-hide-sm" t-esc="record.insurance_provider or 'Self-pay'"/>
+                                    <td class="co-hide-md" t-esc="formatDate(record.create_date)"/>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="co-pagination">
+                    <span t-esc="rangeLabel"/>
+                    <span class="d-flex gap-2">
+                        <button type="button" class="co-btn co-btn--secondary co-btn--sm" t-att-disabled="state.offset === 0"
+                                t-on-click="() => this.load(Math.max(0, state.offset - pageSize))">Previous</button>
+                        <button type="button" class="co-btn co-btn--secondary co-btn--sm" t-att-disabled="state.offset + state.records.length >= state.total"
+                                t-on-click="() => this.load(state.offset + pageSize)">Next</button>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

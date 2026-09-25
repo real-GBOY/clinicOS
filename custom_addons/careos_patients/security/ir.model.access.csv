@@ -1,0 +1,10 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_careos_patient_staff,careos.patient staff,model_careos_patient,careos_base.group_careos_user,1,0,0,0
+access_careos_patient_reception,careos.patient reception,model_careos_patient,careos_base.group_careos_reception,1,1,1,0
+access_careos_patient_doctor,careos.patient doctor,model_careos_patient,careos_base.group_careos_doctor,1,1,1,0
+access_careos_patient_contact_staff,careos.patient.contact staff,model_careos_patient_contact,careos_base.group_careos_user,1,0,0,0
+access_careos_patient_contact_reception,careos.patient.contact reception,model_careos_patient_contact,careos_base.group_careos_reception,1,1,1,1
+access_careos_patient_contact_doctor,careos.patient.contact doctor,model_careos_patient_contact,careos_base.group_careos_doctor,1,1,1,1
+access_careos_patient_allergy_staff,careos.patient.allergy staff,model_careos_patient_allergy,careos_base.group_careos_user,1,0,0,0
+access_careos_patient_allergy_clinical,careos.patient.allergy clinical,model_careos_patient_allergy,careos_base.group_careos_clinical,1,1,1,0
+access_careos_patient_condition_clinical,careos.patient.condition clinical,model_careos_patient_condition,careos_base.group_careos_clinical,1,1,1,0

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_patients.PatientOverview">
+        <div class="co-p360-overview">
+            <div class="co-p360-overview__main">
+                <section class="co-p360-section" aria-labelledby="co-sec-allergies">
+                    <div class="co-p360-section__head">
+                        <div class="co-section-label" id="co-sec-allergies">Allergies</div>
+                        <button t-if="p.can_edit_clinical" type="button" class="co-btn co-btn--ghost co-btn--sm" name="add_allergy" t-on-click="addAllergy">+ Record</button>
+                    </div>
+                    <div t-if="!p.allergies.length" class="co-muted co-list-row">No known allergies recorded.</div>
+                    <t t-foreach="p.allergies" t-as="allergy" t-key="allergy.id">
+                        <div class="co-list-row d-flex justify-content-between gap-2">
+                            <span><strong t-esc="allergy.allergen"/><span t-if="allergy.reaction" class="co-muted"> · <t t-esc="allergy.reaction"/></span></span>
+                            <Badge label="allergy.severity_label" tone="severityTone(allergy)"/>
+                        </div>
+                    </t>
+                </section>
+
+                <section t-if="p.clinical_access" class="co-p360-section" aria-labelledby="co-sec-conditions">
+                    <div class="co-p360-section__head">
+                        <div class="co-section-label" id="co-sec-conditions">Conditions</div>
+                        <button t-if="p.can_edit_clinical" type="button" class="co-btn co-btn--ghost co-btn--sm" name="add_condition" t-on-click="addCondition">+ Add</button>
+                    </div>
+                    <div t-if="!p.conditions.length" class="co-muted co-list-row">No conditions on the problem list.</div>
+                    <t t-foreach="p.conditions" t-as="condition" t-key="condition.id">
+                        <div class="co-list-row d-flex justify-content-between gap-2">
+                            <span>
+                                <strong t-esc="condition.name"/>
+                                <span t-if="condition.code" class="co-muted"> · <t t-esc="condition.code"/></span>
+                                <span t-if="condition.onset_date" class="co-muted"> · since <t t-esc="formatDate(condition.onset_date)"/></span>
+                            </span>
+                            <Badge label="condition.status_label" tone="conditionTone(condition)"/>
+                        </div>
+                    </t>
+                    <div t-if="p.blood_type" class="co-list-row"><span class="co-muted">Blood type</span> <strong t-esc="p.blood_type"/></div>
+                </section>
+
+                <section class="co-p360-section" aria-labelledby="co-sec-identity">
+                    <div class="co-section-label" id="co-sec-identity">Identity &amp; contact</div>
+                    <div class="co-kv">
+                        <t t-foreach="identityRows" t-as="row" t-key="row[0]">
+                            <div class="co-kv__key" t-esc="row[0]"/>
+                            <div class="co-kv__value" t-esc="row[1]"/>
+                        </t>
+                    </div>
+                </section>
+
+                <section class="co-p360-section" aria-labelledby="co-sec-contacts">
+                    <div class="co-p360-section__head">
+                        <div class="co-section-label" id="co-sec-contacts">Contacts</div>
+                        <button t-if="p.can_edit" type="button" class="co-btn co-btn--ghost co-btn--sm" name="add_contact" t-on-click="addContact">+ Add</button>
+                    </div>
+                    <div t-if="!p.contacts.length" class="co-muted co-list-row">No emergency or family contacts.</div>
+                    <t t-foreach="p.contacts" t-as="contact" t-key="contact.id">
+                        <div class="co-list-row d-flex justify-content-between gap-2">
+                            <span><strong t-esc="contact.name"/> <span class="co-muted">· <t t-esc="contact.relationship"/></span></span>
+                            <span class="d-inline-flex align-items-center gap-2 flex-wrap justify-content-end">
+                                <t t-esc="contact.phone"/>
+                                <Badge t-if="contact.is_emergency" label="'Emergency'" tone="'info'"/>
+                            </span>
+                        </div>
+                    </t>
+                </section>
+            </div>
+
+            <section class="co-p360-overview__timeline" aria-labelledby="co-sec-timeline">
+                <div class="co-section-label" id="co-sec-timeline">Timeline</div>
+                <Timeline events="timelineEvents"/>
+            </section>
+        </div>
+    </t>
+</templates>

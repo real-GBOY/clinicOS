@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_patients.PatientCommunication">
+        <div class="co-p360-communication">
+            <div class="co-section-label">Internal notes</div>
+            <div t-if="props.profile.can_edit" class="co-note-composer">
+                <textarea class="co-textarea" name="note" placeholder="Add a note for the care team…  (Ctrl+Enter to save)"
+                          aria-label="New note" t-model="state.draft" t-on-keydown="onKeydown"/>
+                <div class="d-flex justify-content-between align-items-center mt-2 gap-2">
+                    <span class="co-muted small">Visible to CareOS staff with access to this patient. Not sent to the patient.</span>
+                    <button type="button" class="co-btn co-btn--primary co-btn--sm" name="post_note"
+                            t-att-disabled="state.posting or !state.draft.trim()" t-on-click="post">Save note</button>
+                </div>
+                <div t-if="state.postError" class="co-alert co-alert--danger mt-2" role="alert" t-esc="state.postError"/>
+            </div>
+            <EmptyState t-if="state.error" title="'Notes unavailable'" body="state.error" error="true"/>
+            <LoadingState t-elif="!state.messages" rows="3"/>
+            <EmptyState t-elif="!state.messages.length" title="'No notes yet'" body="'Notes about calls, requests and follow-ups for this patient appear here.'"/>
+            <div t-else="" class="co-note-list">
+                <t t-foreach="state.messages" t-as="message" t-key="message.id">
+                    <article class="co-note">
+                        <div class="co-note__meta"><strong t-esc="message.author"/> · <t t-esc="when(message)"/></div>
+                        <div class="co-note__body" t-out="message.body"/>
+                    </article>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>
