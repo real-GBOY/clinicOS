@@ -3,6 +3,9 @@
     <t t-name="careos_patients.PatientOverview">
         <div class="co-p360-overview">
             <div class="co-p360-overview__main">
+                <t t-foreach="overviewCards" t-as="card" t-key="card.id">
+                    <t t-component="card.Component" profile="props.profile" reload="props.reload"/>
+                </t>
                 <section class="co-p360-section" aria-labelledby="co-sec-allergies">
                     <div class="co-p360-section__head">
                         <div class="co-section-label" id="co-sec-allergies">Allergies</div>

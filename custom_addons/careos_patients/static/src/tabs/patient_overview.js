@@ -1,9 +1,17 @@
 import { Component } from "@odoo/owl";
+import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { Badge, EmptyState, Timeline } from "@careos_base/components/primitives";
 import { RecordEntryDialog } from "@careos_base/components/record_entry_dialog";
 import { formatDisplayDate, formatShortDate } from "@careos_base/components/format";
 import { patientTabRegistry } from "../screens/patient_360";
+
+/**
+ * Cards shown at the top of the Patient 360 overview, contributed by other
+ * modules (e.g. the next appointment). Entry: { sequence, Component,
+ * isVisible?(profile) }. Components receive { profile, reload }.
+ */
+export const patientOverviewCardRegistry = registry.category("careos.patient_overview_cards");
 
 const SEVERITY_TONE = { mild: "warning", moderate: "danger", severe: "danger" };
 const CONDITION_TONE = { active: "warning", controlled: "info", resolved: "success" };
@@ -19,6 +27,14 @@ export class PatientOverview extends Component {
 
     get p() {
         return this.props.profile;
+    }
+
+    get overviewCards() {
+        return patientOverviewCardRegistry
+            .getEntries()
+            .map(([id, card]) => ({ id, ...card }))
+            .filter((card) => !card.isVisible || card.isVisible(this.p))
+            .sort((a, b) => (a.sequence ?? 10) - (b.sequence ?? 10));
     }
 
     get identityRows() {

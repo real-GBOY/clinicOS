@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_base.RecordPicker">
+        <div class="co-picker">
+            <div t-if="props.value" class="co-picker__selected">
+                <span class="co-picker__value" t-esc="props.value.display_name"/>
+                <button type="button" class="co-btn co-btn--ghost co-btn--sm" t-on-click="clear">Change</button>
+            </div>
+            <t t-else="">
+                <input type="text" t-attf-class="co-input {{props.invalid ? 'co-input--invalid' : ''}}" autocomplete="off"
+                       t-att-name="props.name" t-att-placeholder="props.placeholder"
+                       role="combobox" t-att-aria-expanded="state.open and state.results.length ? 'true' : 'false'"
+                       t-att-value="state.query" t-on-input="onInput" t-on-keydown="onKeydown" t-on-blur="onBlur"/>
+                <div t-if="state.open and state.results.length" class="co-popover co-picker__menu" role="listbox">
+                    <t t-foreach="state.results" t-as="record" t-key="record.id">
+                        <button type="button" role="option"
+                                t-attf-class="co-popover__item {{record_index === state.active ? 'co-popover__item--active' : ''}}"
+                                t-on-mousedown.prevent="() => this.select(record)" t-esc="record.display_name"/>
+                    </t>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>

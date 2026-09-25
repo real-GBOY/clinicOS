@@ -1,3 +1,7 @@
+from datetime import datetime, time, timedelta
+
+import pytz
+
 from odoo import api, fields, models
 from odoo.addons.base.models.res_partner import _tz_get
 
@@ -29,6 +33,31 @@ class CareosBranch(models.Model):
     _code_company_uniq = models.Constraint(
         "UNIQUE(code, company_id)", "A branch code must be unique within the organization."
     )
+
+    # ------------------------------------------------------------------
+    # Branch-local time. Operational days ("today's appointments") are
+    # defined by the branch timezone, not the server's or the browser's.
+    # ------------------------------------------------------------------
+
+    def _careos_tz(self):
+        self.ensure_one()
+        return pytz.timezone(self.timezone or "UTC")
+
+    def _careos_today(self):
+        """The current date at this branch."""
+        return datetime.now(pytz.utc).astimezone(self._careos_tz()).date()
+
+    def _careos_day_bounds(self, day=None):
+        """UTC-naive [start, end) datetimes covering ``day`` in branch time."""
+        tz = self._careos_tz()
+        day = day or self._careos_today()
+        start = tz.localize(datetime.combine(day, time.min))
+        end = tz.localize(datetime.combine(day + timedelta(days=1), time.min))
+        return start.astimezone(pytz.utc).replace(tzinfo=None), end.astimezone(pytz.utc).replace(tzinfo=None)
+
+    def _careos_local_date(self, dt):
+        """Branch-local date of a UTC-naive datetime."""
+        return pytz.utc.localize(dt).astimezone(self._careos_tz()).date()
 
     @api.model_create_multi
     def create(self, vals_list):
