@@ -37,10 +37,31 @@ clinical data). Imaging technician and HR roles arrive with their modules.
 Allergies are visible to everyone because they are safety-critical for every role that touches a patient.
 Nobody deletes patients or allergies through CareOS; records are archived/retired.
 
+## Appointments and queue matrix (enforced)
+
+| | Reception | Doctor | Nurse | Lab | Pharmacy | Finance | Manager | Admin |
+|---|---|---|---|---|---|---|---|---|
+| See appointments | branch | own schedule | branch | — | — | — | branch | branch |
+| Book / reschedule | ✓ | — | — | — | — | — | — | ✓ |
+| Confirm / cancel | ✓ | — | — | — | — | — | — | ✓ |
+| Check in / no-show | ✓ | — | — | — | — | — | — | — |
+| Start / complete visit | ✓ | own | — | — | — | — | — | — |
+| See queue | branch | own patients | branch | — | — | — | branch | branch |
+| Call patient | ✓ | own | ✓ | — | — | — | — | — |
+
+"branch" = the user's assigned branches (`careos_branch_ids`); "own" = appointments whose provider is linked
+to the user. Three layers enforce this: ACLs (model), record rules (rows: branch or own schedule), and
+`ACTION_ROLES` (which role may perform which transition). Reception may start/complete visits for now
+because no clinical record is created yet; the clinical module will reserve consultations for clinicians.
+
+Conflict detection and ticket numbering use `sudo()` so bookings a user cannot see still count; they return
+no data about those bookings (only "provider is already booked" or the next number).
+
 ## Record rules
 
-All CareOS models carry `company_id` and a multi-company rule (`company_id in company_ids`). Branch-level
-rules will apply to operational models (appointments, queue) from the next slice.
+All CareOS models carry `company_id` and a multi-company rule (`company_id in company_ids`). Appointments
+and queue tickets add branch rules (`branch_id in user.careos_branch_ids`) for front-desk, nurse, manager and
+admin roles, and an own-schedule rule for doctors.
 
 ## Audit trail
 

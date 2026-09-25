@@ -31,6 +31,8 @@ Dark mode tokens are defined (`.careos[data-careos-theme="dark"]`) but no toggle
 | CareModal | `components/modal.js` |
 | RecordEntryDialog (small create forms) | `components/record_entry_dialog.js` |
 | CommandPalette | `search/command_palette.js` |
+| RecordPicker (typeahead over `name_search`) | `components/record_picker.js` |
+| AppointmentActions (server-driven workflow buttons) | `careos_appointments/static/src/components/appointment_actions.js` |
 | CSS-only: `.co-btn*`, `.co-input/select/textarea`, `.co-field*`, `.co-card`, `.co-table*`, `.co-tabs*`, `.co-segmented*`, `.co-popover*`, `.co-alert*`, `.co-kv`, `.co-pagination` | `components.css` |
 
 ## Rules carried over from the brand system
@@ -45,6 +47,13 @@ Dark mode tokens are defined (`.careos[data-careos-theme="dark"]`) but no toggle
 * ≤ 900px: sidebar becomes an off-canvas drawer (hamburger in the top bar), breadcrumb collapses to the branch.
 * ≤ 600px: search collapses to its shortcut chip, forms become one column, modals go full-screen,
   secondary table columns hide (`.co-hide-sm`, `.co-hide-md`).
+
+## Status colours
+
+| Record | State → badge tone |
+|---|---|
+| Appointment | Draft neutral · Confirmed info · Checked-in warning · In Progress active (aqua) · Completed success · Cancelled danger · No-show neutral |
+| Queue | Waiting column heading warning · Called info badge · In Consultation info card · Completed success heading |
 
 ## Not yet implemented
 

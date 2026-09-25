@@ -28,6 +28,19 @@ Claude Design project `e937885f-3a4d-4765-ac4c-4a3fbb0debb5`:
 4. **Status labels.** The prototype shows an appointment "In progress" state while the spec's state machine
    says "In Progress"/"In Consultation". The spec state machine wins; this matters from the appointments slice on.
 
+### Slice 2 decisions (appointments, queue, reception dashboard)
+
+5. **Appointment labels.** Spec state machine names (Draft, Checked-in, In Progress) are used; the brand
+   system badge set says "Scheduled" and "In Consultation". Badge colours follow the brand system.
+6. **Queue states.** Spec: Waiting, Called, In Consultation, Completed, No-show. No "Skipped" (not specified).
+7. **Queue board layout.** The prototype shows three columns (Waiting / In consultation / Completed); called
+   patients stay in the Waiting column with a "Called · Room" badge rather than a fourth column.
+8. **Reception dashboard.** KPI cards + today's appointments table + quick actions, as in the prototype. The
+   prototype "Patient messages" quick action is omitted until communications exist; "In consultation" and
+   "Completed" were added as KPIs next to the prototype's four.
+9. **Calendar.** The prototype doctor-column calendar is the Appointments "Schedule" view (one day,
+   30-minute rows); a List view with filters sits beside it. Week view is deferred.
+
 ## Runtime shape
 
 ```

@@ -14,10 +14,10 @@
 .\run.ps1
 
 # Fresh demo database with CareOS installed (demo users/patients are synthetic)
-.\.venv\Scripts\python.exe odoo\odoo-bin -c odoo.conf -d careos_demo --with-demo -i careos_patients --stop-after-init
+.\.venv\Scripts\python.exe odoo\odoo-bin -c odoo.conf -d careos_demo --with-demo -i careos_queue --stop-after-init
 
 # Upgrade after changing data/views
-.\run.ps1 -d careos_demo -u careos_base,careos_patients
+.\run.ps1 -d careos_demo -u careos_base,careos_patients,careos_appointments,careos_queue
 ```
 
 Open CareOS at `/odoo/action-careos_base.action_careos_app` (it is also the home action of demo users).
@@ -33,6 +33,20 @@ Open CareOS at `/odoo/action-careos_base.action_careos_app` (it is also the home
 | lab | Lab Technician | Cairo |
 | manager | Clinic Manager | all |
 | admin | CareOS System Administrator + Odoo admin | all |
+
+Demo providers: Dr. Nourhan Saeed (login `doctor`), Dr. Karim Fathy (`doctor2`), Dr. Mona El-Sayed and
+Dr. Hassan Ali (no login). Providers, rooms and visit types are configured under CareOS Configuration.
+
+## Demo schedule
+
+`careos_appointments` demo data books today's clinic at the Cairo branch (09:00–12:00) plus the next two
+days, relative to the **install date**; `careos_queue` demo checks four of them in and moves them through the
+queue. On later days the dashboard is empty until you seed again:
+
+```python
+# odoo-bin shell -d careos_demo
+env["careos.appointment"]._careos_demo_schedule(); env["careos.appointment"]._careos_demo_queue(); env.cr.commit()
+```
 
 ## Adding a screen
 
