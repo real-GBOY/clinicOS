@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_communications.ConversationThread">
+        <div class="co-thread">
+            <div t-if="!state.messages" class="co-skeleton" style="height: 80px"/>
+            <div t-elif="!state.messages.length" class="co-muted co-thread__empty">No messages with this patient yet.</div>
+            <div t-else="" class="co-thread__messages">
+                <t t-foreach="state.messages" t-as="message" t-key="message.id">
+                    <div t-attf-class="co-bubble {{message.from_patient ? '' : 'co-bubble--staff'}}">
+                        <div class="co-bubble__text" t-esc="message.text"/>
+                        <div class="co-bubble__meta"><t t-if="!message.from_patient"><t t-esc="message.author"/> · </t><t t-esc="when(message)"/></div>
+                    </div>
+                </t>
+            </div>
+            <div class="co-thread__reply">
+                <textarea class="co-textarea" name="reply" rows="2" placeholder="Reply…  (Enter to send, Shift+Enter for a new line)"
+                          aria-label="Reply" t-model="state.draft" t-on-keydown="onKeydown"/>
+                <button type="button" class="co-btn co-btn--primary" name="send_reply" t-att-disabled="state.sending or !state.draft.trim()" t-on-click="send">Send</button>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="careos_communications.Inbox">
+        <div>
+            <PageHeader title="'Communication Center'" subtitle="'Patient conversations &amp; reminders'"/>
+            <div t-if="state.error and !state.data" class="co-card"><EmptyState title="'Inbox unavailable'" body="state.error" error="true"/></div>
+            <LoadingState t-elif="!state.data" rows="6"/>
+            <div t-else="" class="co-card co-inbox">
+                <div class="co-inbox__list">
+                    <div t-if="!state.data.conversations.length" class="co-muted p-3">No conversations yet.</div>
+                    <t t-foreach="state.data.conversations" t-as="c" t-key="c.patient.id">
+                        <button type="button" t-attf-class="co-inbox__item {{c.patient.id === state.selected ? 'co-inbox__item--active' : ''}}"
+                                t-att-data-patient="c.patient.name" t-on-click="() => this.select(c)">
+                            <span class="d-flex justify-content-between gap-2">
+                                <span class="fw-bold"><t t-esc="c.patient.name"/><span t-if="c.needs_reply" class="co-inbox__unread" aria-label="Awaiting reply"/></span>
+                                <span class="co-inbox__time" t-esc="when(c.date)"/>
+                            </span>
+                            <span class="co-inbox__preview" t-esc="c.preview"/>
+                        </button>
+                    </t>
+                </div>
+                <div class="co-inbox__thread">
+                    <t t-if="state.selected">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="fw-bold" t-esc="selectedName"/>
+                            <button type="button" class="co-btn co-btn--ghost co-btn--sm" t-on-click="openPatient">Patient 360 →</button>
+                        </div>
+                        <ConversationThread t-key="state.selected + ':' + state.threadKey" patientId="state.selected" onSent.bind="load"/>
+                    </t>
+                    <EmptyState t-else="" title="'Select a conversation'"/>
+                </div>
+                <div class="co-inbox__side">
+                    <div class="co-section-label">Upcoming reminders</div>
+                    <div t-if="!state.data.reminders.length" class="co-muted co-list-row">No reminders scheduled.</div>
+                    <t t-foreach="state.data.reminders" t-as="reminder" t-key="reminder.id">
+                        <div class="co-list-row">
+                            <div class="d-flex justify-content-between gap-2">
+                                <strong t-esc="reminder.patient.name"/>
+                                <Badge label="reminder.state_label" tone="reminderTone(reminder)"/>
+                            </div>
+                            <div class="co-muted small"><t t-esc="reminder.channel"/> · <t t-esc="when(reminder.scheduled_at)"/></div>
+                            <div t-if="reminder.error" class="small co-reminder-error"><t t-esc="reminder.error"/>
+                                <button type="button" class="co-btn co-btn--ghost co-btn--sm" t-on-click="() => this.retry(reminder)">Retry</button>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="careos_communications.PatientConversation">
+        <ConversationThread patientId="props.profile.id"/>
+    </t>
+</templates>

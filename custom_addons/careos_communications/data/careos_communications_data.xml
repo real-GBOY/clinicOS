@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Patient-facing conversation, kept apart from internal notes. -->
+    <record id="mt_patient_message" model="mail.message.subtype">
+        <field name="name">Patient message</field>
+        <field name="res_model">careos.patient</field>
+        <field name="internal" eval="False"/>
+        <field name="default" eval="False"/>
+    </record>
+    <record id="cron_careos_reminders" model="ir.cron">
+        <field name="name">CareOS: send appointment reminders</field>
+        <field name="model_id" ref="model_careos_reminder"/>
+        <field name="state">code</field>
+        <field name="code">model._careos_cron_send()</field>
+        <field name="interval_number">10</field>
+        <field name="interval_type">minutes</field>
+    </record>
+</odoo>
