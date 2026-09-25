@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_careos_ai_suggestion_admin,careos.ai.suggestion admin,model_careos_ai_suggestion,careos_base.group_careos_admin,1,0,0,0

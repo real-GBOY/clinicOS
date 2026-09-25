@@ -1,0 +1,65 @@
+/* Prototype AI panel: right-hand drawer, clearly labelled. */
+.co-ai-scrim {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 25, 35, 0.25);
+    display: flex;
+    justify-content: flex-end;
+    z-index: 1055;
+    animation: co-fade var(--careos-motion-overlay);
+}
+.co-ai-panel {
+    width: 380px;
+    max-width: 100%;
+    height: 100%;
+    background: var(--careos-surface);
+    padding: 20px;
+    box-shadow: -8px 0 24px rgba(0, 0, 0, 0.08);
+    overflow-y: auto;
+    animation: co-slide-in var(--careos-motion-overlay);
+}
+@keyframes co-slide-in {
+    from { transform: translateX(8px); opacity: 0; }
+    to { transform: none; opacity: 1; }
+}
+.co-ai-panel__title {
+    font-size: 15px;
+    font-weight: 700;
+}
+.co-ai-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--careos-primary-soft-text);
+    background: var(--careos-primary-soft);
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin: 10px 0 14px;
+}
+.co-ai-body {
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: oklch(30% 0.01 240);
+    white-space: pre-wrap;
+}
+.co-ai-subtitle {
+    margin-top: 16px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--careos-text-secondary);
+    text-transform: uppercase;
+}
+.co-ai-step,
+.co-ai-section {
+    font-size: 12.5px;
+    margin-top: 8px;
+    padding: 9px 10px;
+    background: var(--careos-surface-sunken);
+    border-radius: var(--careos-radius-sm);
+    white-space: pre-wrap;
+}
+.co-ai-status {
+    margin-top: 16px;
+    font-size: 11px;
+    color: var(--careos-muted);
+}

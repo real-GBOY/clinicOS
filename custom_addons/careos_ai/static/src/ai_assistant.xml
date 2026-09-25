@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_ai.AiAssistant">
+        <t t-if="visible">
+            <button type="button" class="co-topbar-button co-topbar-button--accent" name="ai_assistant" t-on-click="toggle">
+                <span class="co-topbar-button__label">AI Assistant</span><span class="d-inline d-sm-none">AI</span>
+            </button>
+            <div t-if="state.open" class="careos co-ai-scrim" t-on-mousedown="onScrimClick">
+                <aside class="co-ai-panel" role="dialog" aria-label="AI Assistant">
+                    <div class="d-flex justify-content-between align-items-baseline">
+                        <div class="co-ai-panel__title" t-esc="state.result ? state.result.title : 'CareOS Intelligence'"/>
+                        <button type="button" class="co-modal__close" aria-label="Close" t-on-click="close">×</button>
+                    </div>
+
+                    <t t-if="!state.status.enabled">
+                        <div class="co-alert co-alert--info mt-3">
+                            CareOS Intelligence is not enabled. It sends de-identified record context to Anthropic's Claude to
+                            draft summaries that staff review before use.
+                        </div>
+                        <t t-if="state.status.is_admin">
+                            <label class="co-field mt-3">
+                                <span class="co-field__label">Anthropic API key (optional if the server has credentials)</span>
+                                <input class="co-input" type="password" autocomplete="off" name="ai_api_key" t-model="state.apiKey"/>
+                            </label>
+                            <button type="button" class="co-btn co-btn--primary w-100 mt-2" name="enable_ai" t-on-click="enable">Enable CareOS Intelligence</button>
+                        </t>
+                        <div t-else="" class="co-muted small mt-2">Ask an administrator to enable it.</div>
+                    </t>
+                    <div t-elif="!state.context" class="co-muted mt-3">
+                        The assistant works on the dashboard, a patient record, an encounter or an invoice. Open one of those to use it.
+                    </div>
+                    <t t-else="">
+                        <div class="co-ai-label">AI-GENERATED · REQUIRES REVIEW</div>
+                        <div t-if="state.loading" class="co-ai-loading" role="status">
+                            <div class="co-skeleton mb-2"/><div class="co-skeleton mb-2" style="width: 80%"/><div class="co-skeleton" style="width: 60%"/>
+                            <div class="co-muted small mt-2">Reading the record…</div>
+                        </div>
+                        <div t-elif="state.error" class="co-alert co-alert--danger" role="alert">
+                            <t t-esc="state.error"/>
+                            <button type="button" class="co-btn co-btn--ghost co-btn--sm" t-on-click="run">Try again</button>
+                        </div>
+                        <t t-elif="state.result">
+                            <div class="co-ai-body" t-esc="state.result.output.summary"/>
+                            <t t-if="state.result.output.steps and state.result.output.steps.length">
+                                <div class="co-ai-subtitle">Suggested next steps</div>
+                                <t t-foreach="state.result.output.steps" t-as="step" t-key="step_index">
+                                    <div class="co-ai-step" t-esc="step"/>
+                                </t>
+                            </t>
+                            <t t-if="state.result.kind === 'encounter'">
+                                <div class="co-ai-subtitle">Proposed structure</div>
+                                <t t-foreach="sections" t-as="section" t-key="section[0]">
+                                    <div t-if="state.result.output[section[0]]" class="co-ai-section">
+                                        <label class="d-flex gap-2 align-items-start">
+                                            <input t-if="state.result.status === 'generated'" type="checkbox" t-att-name="'apply_' + section[0]"
+                                                   t-att-checked="state.apply.has(section[0])" t-on-change="() => this.toggleSection(section[0])"/>
+                                            <span><strong t-esc="section[1]"/><br/><t t-esc="state.result.output[section[0]]"/></span>
+                                        </label>
+                                    </div>
+                                </t>
+                                <div t-if="state.result.output.diagnosis_suggestions.length" class="co-ai-section">
+                                    <strong>Codes to consider</strong> (add them yourself after review):
+                                    <t t-foreach="state.result.output.diagnosis_suggestions" t-as="dx" t-key="dx_index">
+                                        <div><t t-esc="dx.code"/> — <t t-esc="dx.description"/></div>
+                                    </t>
+                                </div>
+                                <div t-if="state.result.status === 'generated'" class="d-flex gap-2 mt-3">
+                                    <button type="button" class="co-btn co-btn--primary" name="apply_to_chart" t-on-click="applyToChart">Apply to chart</button>
+                                    <button type="button" class="co-btn co-btn--secondary" t-on-click="dismiss">Dismiss</button>
+                                </div>
+                            </t>
+                            <div class="co-ai-status">
+                                <t t-esc="state.result.status_label"/><t t-if="state.result.reviewed_by"> by <t t-esc="state.result.reviewed_by"/></t>
+                                · <t t-esc="state.result.model"/>
+                            </div>
+                        </t>
+                    </t>
+                </aside>
+            </div>
+        </t>
+    </t>
+</templates>
