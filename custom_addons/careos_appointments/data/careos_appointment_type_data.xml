@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Default visit types from the CareOS setup guide; editable per clinic. -->
+<odoo>
+    <data noupdate="1">
+        <record id="type_new_patient" model="careos.appointment.type">
+            <field name="name">New patient</field>
+            <field name="sequence">1</field>
+            <field name="duration">30</field>
+        </record>
+        <record id="type_follow_up" model="careos.appointment.type">
+            <field name="name">Follow-up</field>
+            <field name="sequence">2</field>
+            <field name="duration">20</field>
+        </record>
+        <record id="type_consultation" model="careos.appointment.type">
+            <field name="name">Consultation</field>
+            <field name="sequence">3</field>
+            <field name="duration">30</field>
+        </record>
+    </data>
+</odoo>

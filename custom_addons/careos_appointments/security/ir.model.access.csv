@@ -1,0 +1,12 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_careos_room_staff,careos.room staff,model_careos_room,careos_base.group_careos_user,1,0,0,0
+access_careos_room_admin,careos.room admin,model_careos_room,careos_base.group_careos_admin,1,1,1,0
+access_careos_provider_staff,careos.provider staff,model_careos_provider,careos_base.group_careos_user,1,0,0,0
+access_careos_provider_admin,careos.provider admin,model_careos_provider,careos_base.group_careos_admin,1,1,1,0
+access_careos_appointment_type_staff,careos.appointment.type staff,model_careos_appointment_type,careos_base.group_careos_user,1,0,0,0
+access_careos_appointment_type_admin,careos.appointment.type admin,model_careos_appointment_type,careos_base.group_careos_admin,1,1,1,0
+access_careos_appointment_reception,careos.appointment reception,model_careos_appointment,careos_base.group_careos_reception,1,1,1,0
+access_careos_appointment_doctor,careos.appointment doctor,model_careos_appointment,careos_base.group_careos_doctor,1,1,0,0
+access_careos_appointment_nurse,careos.appointment nurse,model_careos_appointment,careos_base.group_careos_nurse,1,0,0,0
+access_careos_appointment_manager,careos.appointment manager,model_careos_appointment,careos_base.group_careos_manager,1,0,0,0
+access_careos_appointment_admin,careos.appointment admin,model_careos_appointment,careos_base.group_careos_admin,1,1,1,0

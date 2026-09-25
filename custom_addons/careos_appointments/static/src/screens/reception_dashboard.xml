@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_appointments.ReceptionDashboard">
+        <div class="co-dashboard">
+            <div t-if="state.error and !d" class="co-card">
+                <EmptyState title="'Dashboard unavailable'" body="state.error" error="true">
+                    <button type="button" class="co-btn co-btn--secondary co-btn--sm" t-on-click="() => this.load()">Try again</button>
+                </EmptyState>
+            </div>
+            <LoadingState t-elif="!d" rows="6"/>
+            <t t-else="">
+                <PageHeader title="'Reception Dashboard'" subtitle="subtitle"/>
+
+                <div class="co-metric-grid">
+                    <t t-foreach="d.kpis" t-as="kpi" t-key="kpi.key">
+                        <div class="co-card co-card--padded co-metric" t-att-data-kpi="kpi.key">
+                            <div class="co-metric__label" t-esc="kpi.label"/>
+                            <div t-attf-class="co-metric__value {{kpi.tone ? 'co-metric__value--' + kpi.tone : ''}}" t-esc="kpi.value"/>
+                        </div>
+                    </t>
+                </div>
+
+                <div class="co-dashboard__grid">
+                    <section class="co-card co-dashboard__today" aria-labelledby="co-today-title">
+                        <div class="co-card__title co-dashboard__card-title" id="co-today-title">Today's appointments</div>
+                        <EmptyState t-if="!d.appointments.length" title="'No appointments today'" body="'Bookings for today at this branch appear here.'"/>
+                        <div t-else="" class="co-table-scroll">
+                            <table class="co-table co-table--interactive">
+                                <thead>
+                                    <tr><th>Time</th><th>Patient</th><th class="co-hide-sm">Doctor</th><th class="co-hide-md">Type</th><th>Status</th><th/></tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="d.appointments" t-as="appt" t-key="appt.id">
+                                        <tr t-on-click="() => this.open(appt)" tabindex="0" t-att-data-appointment-id="appt.id"
+                                            t-on-keydown="(ev) => ev.key === 'Enter' and this.open(appt)">
+                                            <td t-esc="time(appt)"/>
+                                            <td class="co-table__primary" t-esc="appt.patient.name"/>
+                                            <td class="co-hide-sm" t-esc="appt.provider.name"/>
+                                            <td class="co-hide-md" t-esc="appt.type.name"/>
+                                            <td><Badge label="appt.state_label" tone="tone(appt)"/></td>
+                                            <td class="text-end"><AppointmentActions appointment="appt" onChanged.bind="load" only="['check_in']" small="true"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <div class="co-dashboard__side">
+                        <section class="co-card co-card--padded" aria-labelledby="co-quick-title">
+                            <div class="co-card__title" id="co-quick-title">Quick actions</div>
+                            <button type="button" class="co-quick-action" name="quick_register" t-on-click="registerPatient">+ Register patient</button>
+                            <button type="button" class="co-quick-action" name="quick_book" t-on-click="book">+ Book appointment</button>
+                        </section>
+                        <t t-foreach="panels" t-as="panel" t-key="panel.id">
+                            <t t-component="panel.Component" dashboard="d" reload.bind="load"/>
+                        </t>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Synthetic rooms, providers and schedule for demo databases. -->
+<odoo>
+    <record id="room_cairo_2" model="careos.room">
+        <field name="name">Room 2</field>
+        <field name="branch_id" ref="careos_base.branch_cairo"/>
+    </record>
+    <record id="room_cairo_3" model="careos.room">
+        <field name="name">Room 3</field>
+        <field name="branch_id" ref="careos_base.branch_cairo"/>
+    </record>
+    <record id="room_cairo_5" model="careos.room">
+        <field name="name">Room 5</field>
+        <field name="branch_id" ref="careos_base.branch_cairo"/>
+    </record>
+    <record id="room_alexandria_1" model="careos.room">
+        <field name="name">Room 1</field>
+        <field name="branch_id" ref="careos_base.branch_alexandria"/>
+    </record>
+
+    <record id="provider_saeed" model="careos.provider">
+        <field name="name">Dr. Nourhan Saeed</field>
+        <field name="user_id" ref="careos_base.user_doctor"/>
+        <field name="specialty">Cardiology</field>
+        <field name="department_id" ref="careos_base.dept_cairo_cardiology"/>
+        <field name="branch_ids" eval="[Command.set([ref('careos_base.branch_cairo')])]"/>
+        <field name="default_room_id" ref="room_cairo_3"/>
+    </record>
+    <record id="provider_fathy" model="careos.provider">
+        <field name="name">Dr. Karim Fathy</field>
+        <field name="user_id" ref="careos_base.user_doctor2"/>
+        <field name="specialty">Internal Medicine</field>
+        <field name="department_id" ref="careos_base.dept_cairo_internal"/>
+        <field name="branch_ids" eval="[Command.set([ref('careos_base.branch_cairo'), ref('careos_base.branch_menoufia')])]"/>
+        <field name="default_room_id" ref="room_cairo_5"/>
+    </record>
+    <record id="provider_elsayed" model="careos.provider">
+        <field name="name">Dr. Mona El-Sayed</field>
+        <field name="specialty">Cardiology</field>
+        <field name="branch_ids" eval="[Command.set([ref('careos_base.branch_cairo')])]"/>
+        <field name="default_room_id" ref="room_cairo_2"/>
+    </record>
+    <record id="provider_ali" model="careos.provider">
+        <field name="name">Dr. Hassan Ali</field>
+        <field name="specialty">Dermatology</field>
+        <field name="department_id" ref="careos_base.dept_alexandria_dermatology"/>
+        <field name="branch_ids" eval="[Command.set([ref('careos_base.branch_alexandria')])]"/>
+        <field name="default_room_id" ref="room_alexandria_1"/>
+    </record>
+
+    <function model="careos.appointment" name="_careos_demo_schedule"/>
+</odoo>

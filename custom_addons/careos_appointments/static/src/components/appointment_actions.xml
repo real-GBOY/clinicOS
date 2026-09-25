@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_appointments.AppointmentActions">
+        <span class="co-appt-actions">
+            <t t-foreach="actions" t-as="action" t-key="action.key">
+                <button type="button" t-att-name="'appt_' + action.key" t-att-disabled="state.busy"
+                        t-attf-class="co-btn co-btn--{{action.style}} {{props.small ? 'co-btn--sm' : ''}}"
+                        t-on-click="(ev) => this.run(action.key, ev)" t-esc="action.label"/>
+            </t>
+        </span>
+    </t>
+</templates>

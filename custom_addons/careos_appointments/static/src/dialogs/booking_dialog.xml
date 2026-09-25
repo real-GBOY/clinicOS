@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_appointments.BookingDialog">
+        <CareModal title="title" close="props.close" large="true">
+            <div t-if="!state.options" class="co-skeleton" style="height: 120px"/>
+            <form t-else="" class="co-form-grid" t-on-submit.prevent="save" autocomplete="off">
+                <label t-attf-class="co-field co-field--wide {{state.errors.patient ? 'co-field--error' : ''}}">
+                    <span class="co-field__label">Patient<span class="co-required">*</span></span>
+                    <div t-if="isReschedule" class="co-picker__selected"><span class="co-picker__value" t-esc="state.patient.display_name"/></div>
+                    <RecordPicker t-else="" model="'careos.patient'" name="'patient'" value="state.patient"
+                                  onChange="(record) => this.state.patient = record" invalid="!!state.errors.patient"
+                                  placeholder="'Search by name, patient ID or phone'"/>
+                    <span t-if="state.errors.patient" class="co-field__error" t-esc="state.errors.patient"/>
+                </label>
+
+                <label t-attf-class="co-field {{state.errors.provider ? 'co-field--error' : ''}}">
+                    <span class="co-field__label">Provider<span class="co-required">*</span></span>
+                    <select class="co-select" name="provider_id" t-on-change="(ev) => this.onProviderChange(ev.target.value)">
+                        <option value="">—</option>
+                        <t t-foreach="state.options.providers" t-as="provider" t-key="provider.id">
+                            <option t-att-value="provider.id" t-att-selected="'' + provider.id === state.providerId">
+                                <t t-esc="provider.name"/><t t-if="provider.specialty"> · <t t-esc="provider.specialty"/></t>
+                            </option>
+                        </t>
+                    </select>
+                    <span t-if="state.errors.provider" class="co-field__error" t-esc="state.errors.provider"/>
+                </label>
+                <label t-attf-class="co-field {{state.errors.type ? 'co-field--error' : ''}}">
+                    <span class="co-field__label">Visit type<span class="co-required">*</span></span>
+                    <select class="co-select" name="type_id" t-on-change="(ev) => this.onTypeChange(ev.target.value)">
+                        <t t-foreach="state.options.types" t-as="type" t-key="type.id">
+                            <option t-att-value="type.id" t-att-selected="'' + type.id === state.typeId"><t t-esc="type.name"/> (<t t-esc="type.duration"/> min)</option>
+                        </t>
+                    </select>
+                </label>
+
+                <label t-attf-class="co-field {{state.errors.day ? 'co-field--error' : ''}}">
+                    <span class="co-field__label">Date<span class="co-required">*</span></span>
+                    <input class="co-input" type="date" name="day" t-att-min="today" t-att-value="state.day" t-on-change="onDayChange"/>
+                    <span t-if="state.errors.day" class="co-field__error" t-esc="state.errors.day"/>
+                </label>
+                <label t-attf-class="co-field {{state.errors.time ? 'co-field--error' : ''}}">
+                    <span class="co-field__label">Time<span class="co-required">*</span></span>
+                    <select class="co-select" name="time" t-on-change="(ev) => this.state.time = ev.target.value">
+                        <option value="">—</option>
+                        <t t-foreach="slots" t-as="slot" t-key="slot.value">
+                            <option t-att-value="slot.value" t-att-disabled="slot.disabled" t-att-selected="slot.value === state.time" t-esc="slot.label"/>
+                        </t>
+                    </select>
+                    <span t-if="state.errors.time" class="co-field__error" t-esc="state.errors.time"/>
+                </label>
+
+                <label class="co-field">
+                    <span class="co-field__label">Duration (minutes)</span>
+                    <input class="co-input" type="number" min="5" max="480" step="5" name="duration" t-model.number="state.duration"/>
+                </label>
+                <label class="co-field">
+                    <span class="co-field__label">Room</span>
+                    <select class="co-select" name="room_id" t-on-change="(ev) => this.state.roomId = ev.target.value">
+                        <option value="">No room</option>
+                        <t t-foreach="state.options.rooms" t-as="room" t-key="room.id">
+                            <option t-att-value="room.id" t-att-selected="'' + room.id === state.roomId" t-esc="room.name"/>
+                        </t>
+                    </select>
+                </label>
+
+                <label class="co-field co-field--wide">
+                    <span class="co-field__label">Reason for visit</span>
+                    <input class="co-input" name="reason" t-model="state.reason" placeholder="e.g. Blood pressure review"/>
+                </label>
+                <label class="co-field co-field--wide">
+                    <span class="co-field__label">Front-desk notes</span>
+                    <textarea class="co-textarea" name="notes" t-model="state.notes"/>
+                </label>
+                <label t-if="!isReschedule" class="co-field co-field--wide co-check">
+                    <input type="checkbox" name="confirm" t-model="state.confirm"/>
+                    <span>Confirm now (the patient has agreed to this time)</span>
+                </label>
+
+                <div t-if="state.serverError" class="co-alert co-alert--danger co-field--wide" role="alert" t-esc="state.serverError"/>
+                <button type="submit" class="d-none"/>
+            </form>
+            <t t-set-slot="footer">
+                <button type="button" class="co-btn co-btn--secondary" t-on-click="() => props.close()">Cancel</button>
+                <button type="button" class="co-btn co-btn--primary" name="save_appointment" t-att-disabled="state.saving or !state.options" t-on-click="save"
+                        t-esc="isReschedule ? 'Save new time' : 'Book appointment'"/>
+            </t>
+        </CareModal>
+    </t>
+</templates>

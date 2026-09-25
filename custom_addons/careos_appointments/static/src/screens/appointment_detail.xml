@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_appointments.AppointmentDetail">
+        <div class="co-appointment-detail">
+            <div t-if="state.error" class="co-card">
+                <EmptyState title="'Appointment unavailable'" body="state.error" error="true">
+                    <button type="button" class="co-btn co-btn--secondary co-btn--sm" t-on-click="back">Back to appointments</button>
+                </EmptyState>
+            </div>
+            <LoadingState t-elif="!a" rows="6"/>
+            <t t-else="">
+                <div class="co-page-header">
+                    <div>
+                        <h1 class="co-page-header__title d-flex align-items-center gap-2">
+                            <t t-esc="a.patient.name"/>
+                            <Badge label="a.state_label" tone="tone"/>
+                        </h1>
+                        <div class="co-page-header__subtitle"><t t-esc="a.name"/> · <t t-esc="when"/> · <t t-esc="a.provider.name"/></div>
+                    </div>
+                    <div class="co-page-header__actions">
+                        <AppointmentActions appointment="a" onChanged.bind="load"/>
+                    </div>
+                </div>
+
+                <div t-if="a.state === 'cancelled'" class="co-alert co-alert--danger mb-3">
+                    Cancelled<t t-if="a.cancel_reason">: <t t-esc="a.cancel_reason"/></t>
+                </div>
+                <div t-if="a.queue_ticket" class="co-alert co-alert--info mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <span>
+                        Queue ticket <strong t-esc="a.queue_ticket.label"/> · <t t-esc="a.queue_ticket.state_label"/>
+                        <t t-if="a.queue_ticket.room"> · <t t-esc="a.queue_ticket.room"/></t>
+                    </span>
+                    <button type="button" class="co-btn co-btn--ghost co-btn--sm" name="open_queue" t-on-click="() => env.careos.navigate('queue')">Open queue →</button>
+                </div>
+
+                <div class="co-detail-grid">
+                    <div class="d-flex flex-column gap-3">
+                        <section class="co-card co-card--padded">
+                            <div class="co-card__title">Patient</div>
+                            <button type="button" class="co-patient-link" name="open_patient" t-on-click="openPatient">
+                                <Avatar name="a.patient.name"/>
+                                <span>
+                                    <span class="d-block co-table__primary" t-esc="a.patient.name"/>
+                                    <span class="d-block co-table__sub" t-esc="a.patient.ref"/>
+                                </span>
+                                <span class="ms-auto co-muted">Patient 360 →</span>
+                            </button>
+                        </section>
+                        <section class="co-card co-card--padded">
+                            <div class="co-card__title">Appointment</div>
+                            <div class="co-kv">
+                                <t t-foreach="detailRows" t-as="row" t-key="row[0]">
+                                    <div class="co-kv__key" t-esc="row[0]"/>
+                                    <div class="co-kv__value" t-esc="row[1]"/>
+                                </t>
+                            </div>
+                            <div t-if="a.notes" class="mt-3">
+                                <div class="co-section-label">Front-desk notes</div>
+                                <div class="co-note__body" t-esc="a.notes"/>
+                            </div>
+                        </section>
+                    </div>
+                    <section class="co-card co-card--padded">
+                        <div class="co-card__title">History</div>
+                        <Timeline events="historyEvents"/>
+                    </section>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>

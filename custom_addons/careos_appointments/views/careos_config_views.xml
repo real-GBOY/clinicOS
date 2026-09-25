@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Scheduling configuration for administrators. Like branches, these use
+     standard admin views until the CareOS settings workspace ships. -->
+<odoo>
+    <record id="careos_provider_view_list" model="ir.ui.view">
+        <field name="name">careos.provider.list</field>
+        <field name="model">careos.provider</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="specialty"/>
+                <field name="user_id"/>
+                <field name="branch_ids" widget="many2many_tags"/>
+                <field name="default_room_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="careos_provider_view_form" model="ir.ui.view">
+        <field name="name">careos.provider.form</field>
+        <field name="model">careos.provider</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="specialty"/>
+                            <field name="department_id"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="user_id"/>
+                            <field name="branch_ids" widget="many2many_tags"/>
+                            <field name="default_room_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="careos_provider_action" model="ir.actions.act_window">
+        <field name="name">Providers</field>
+        <field name="res_model">careos.provider</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="careos_room_view_list" model="ir.ui.view">
+        <field name="name">careos.room.list</field>
+        <field name="model">careos.room</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="branch_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="careos_room_action" model="ir.actions.act_window">
+        <field name="name">Rooms</field>
+        <field name="res_model">careos.room</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <record id="careos_appointment_type_view_list" model="ir.ui.view">
+        <field name="name">careos.appointment.type.list</field>
+        <field name="model">careos.appointment.type</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="duration"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="careos_appointment_type_action" model="ir.actions.act_window">
+        <field name="name">Visit Types</field>
+        <field name="res_model">careos.appointment.type</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <menuitem id="menu_careos_config_provider" parent="careos_base.menu_careos_config_root"
+              action="careos_provider_action" sequence="30"/>
+    <menuitem id="menu_careos_config_room" parent="careos_base.menu_careos_config_root"
+              action="careos_room_action" sequence="40"/>
+    <menuitem id="menu_careos_config_appointment_type" parent="careos_base.menu_careos_config_root"
+              action="careos_appointment_type_action" sequence="50"/>
+</odoo>

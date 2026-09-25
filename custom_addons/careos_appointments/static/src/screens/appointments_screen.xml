@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_appointments.AppointmentsScreen">
+        <div class="co-appointments">
+            <PageHeader title="'Appointments'" subtitle="dayLabel">
+                <t t-set-slot="actions">
+                    <button t-if="state.canBook" type="button" class="co-btn co-btn--primary" name="book_appointment" t-on-click="book">+ Book appointment</button>
+                </t>
+            </PageHeader>
+
+            <div class="co-directory-toolbar">
+                <div class="co-day-nav" role="group" aria-label="Day">
+                    <button type="button" class="co-btn co-btn--secondary co-btn--sm" aria-label="Previous day" t-on-click="() => this.shiftDay(-1)">‹</button>
+                    <button type="button" class="co-btn co-btn--secondary co-btn--sm" t-on-click="goToday">Today</button>
+                    <button type="button" class="co-btn co-btn--secondary co-btn--sm" aria-label="Next day" t-on-click="() => this.shiftDay(1)">›</button>
+                    <input type="date" class="co-input co-day-nav__date" aria-label="Date" t-att-value="state.day" t-on-change="onDayInput"/>
+                </div>
+                <div class="co-search co-directory-toolbar__search">
+                    <span class="co-search__icon" aria-hidden="true">⌕</span>
+                    <input type="search" class="co-input" placeholder="Patient name, patient ID or APT reference"
+                           aria-label="Search appointments" t-att-value="state.query" t-on-input="onQueryInput"/>
+                </div>
+                <select class="co-select co-filter" aria-label="Provider" t-on-change="(ev) => this.setFilter('providerId', ev.target.value)">
+                    <option value="">All providers</option>
+                    <t t-foreach="state.providers" t-as="provider" t-key="provider.id">
+                        <option t-att-value="provider.id" t-att-selected="'' + provider.id === state.providerId" t-esc="provider.name"/>
+                    </t>
+                </select>
+                <select class="co-select co-filter" aria-label="Status" t-on-change="(ev) => this.setFilter('stateFilter', ev.target.value)">
+                    <option value="">All statuses</option>
+                    <t t-foreach="states" t-as="st" t-key="st[0]">
+                        <option t-att-value="st[0]" t-att-selected="st[0] === state.stateFilter" t-esc="st[1]"/>
+                    </t>
+                </select>
+                <div class="co-segmented" role="group" aria-label="View">
+                    <button type="button" t-attf-class="co-segmented__item {{state.view === 'schedule' ? 'co-segmented__item--active' : ''}}"
+                            t-on-click="() => this.state.view = 'schedule'">Schedule</button>
+                    <button type="button" t-attf-class="co-segmented__item {{state.view === 'list' ? 'co-segmented__item--active' : ''}}"
+                            t-on-click="() => this.state.view = 'list'">List</button>
+                </div>
+            </div>
+
+            <div t-if="state.error" class="co-card">
+                <EmptyState title="'Appointments could not be loaded'" body="state.error" error="true">
+                    <button type="button" class="co-btn co-btn--secondary co-btn--sm" t-on-click="() => this.load()">Try again</button>
+                </EmptyState>
+            </div>
+            <LoadingState t-elif="!state.records" rows="6"/>
+            <div t-elif="!state.records.length and (isFiltered or state.view === 'list')" class="co-card">
+                <EmptyState title="isFiltered ? 'No matching appointments' : 'No appointments on this day'"
+                            body="isFiltered ? 'Clear a filter or try another day.' : 'Booked appointments for this day appear here.'">
+                    <button t-if="state.canBook and !isFiltered" type="button" class="co-btn co-btn--primary co-btn--sm" t-on-click="book">+ Book appointment</button>
+                </EmptyState>
+            </div>
+
+            <!-- Schedule: provider columns × 30-minute rows -->
+            <div t-elif="state.view === 'schedule'" class="co-card co-schedule-wrap">
+                <div t-if="!scheduleProviders.length" class="co-empty">
+                    <div class="co-empty__title">No providers at this branch</div>
+                </div>
+                <div t-else="" class="co-schedule" t-attf-style="--co-schedule-cols: {{scheduleProviders.length}}">
+                    <div class="co-schedule__head">
+                        <div/>
+                        <t t-foreach="scheduleProviders" t-as="provider" t-key="provider.id">
+                            <div class="co-schedule__provider">
+                                <t t-esc="provider.name"/>
+                                <div class="co-schedule__specialty" t-esc="provider.specialty"/>
+                            </div>
+                        </t>
+                    </div>
+                    <t t-foreach="scheduleRows" t-as="row" t-key="row.key">
+                        <div class="co-schedule__row">
+                            <div class="co-schedule__time" t-esc="row.time"/>
+                            <t t-foreach="row.cells" t-as="cell" t-key="cell.key">
+                                <div class="co-schedule__cell">
+                                    <t t-foreach="cell.appointments" t-as="appt" t-key="appt.id">
+                                        <button type="button" t-attf-class="co-slot co-slot--{{tone(appt)}}" t-on-click="() => this.open(appt)"
+                                                t-att-data-appointment-id="appt.id">
+                                            <span class="co-slot__patient" t-esc="appt.patient.name"/>
+                                            <span class="co-slot__meta"><t t-esc="time(appt)"/> · <t t-esc="appt.type.name"/></span>
+                                            <span class="co-slot__state" t-esc="appt.state_label"/>
+                                        </button>
+                                    </t>
+                                </div>
+                            </t>
+                        </div>
+                    </t>
+                </div>
+            </div>
+
+            <!-- List -->
+            <div t-else="" class="co-card">
+                <div class="co-table-scroll">
+                    <table class="co-table co-table--interactive">
+                        <thead>
+                            <tr><th>Time</th><th>Patient</th><th>Provider</th><th class="co-hide-sm">Type</th><th class="co-hide-md">Room</th><th>Status</th><th/></tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="state.records" t-as="appt" t-key="appt.id">
+                                <tr t-on-click="() => this.open(appt)" tabindex="0" t-on-keydown="(ev) => ev.key === 'Enter' and this.open(appt)">
+                                    <td class="co-table__primary" t-esc="time(appt)"/>
+                                    <td>
+                                        <div class="co-table__primary" t-esc="appt.patient.name"/>
+                                        <div class="co-table__sub" t-esc="appt.name"/>
+                                    </td>
+                                    <td t-esc="appt.provider.name"/>
+                                    <td class="co-hide-sm" t-esc="appt.type.name"/>
+                                    <td class="co-hide-md" t-esc="appt.room ? appt.room.name : '—'"/>
+                                    <td><Badge label="appt.state_label" tone="tone(appt)"/></td>
+                                    <td class="text-end"><AppointmentActions appointment="appt" onChanged.bind="load" only="['check_in', 'start', 'complete']" small="true"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="co-pagination"><span><t t-esc="state.total"/> appointments</span></div>
+            </div>
+        </div>
+    </t>
+</templates>

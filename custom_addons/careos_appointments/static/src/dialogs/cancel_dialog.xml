@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_appointments.CancelDialog">
+        <CareModal title="'Cancel appointment'" close="props.close">
+            <p class="co-muted mb-3">
+                <strong t-esc="props.appointment.patient.name"/> · <t t-esc="when"/>
+            </p>
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <t t-foreach="reasons" t-as="reason" t-key="reason">
+                    <button type="button" t-attf-class="co-btn co-btn--sm {{state.reason === reason ? 'co-btn--primary' : 'co-btn--secondary'}}"
+                            t-on-click="() => this.state.reason = reason" t-esc="reason"/>
+                </t>
+            </div>
+            <label class="co-field">
+                <span class="co-field__label">Reason<span class="co-required">*</span></span>
+                <input class="co-input" name="cancel_reason" t-model="state.reason"/>
+            </label>
+            <div t-if="state.error" class="co-alert co-alert--danger mt-3" role="alert" t-esc="state.error"/>
+            <t t-set-slot="footer">
+                <button type="button" class="co-btn co-btn--secondary" t-on-click="() => props.close()">Keep appointment</button>
+                <button type="button" class="co-btn co-btn--danger" name="confirm_cancel" t-att-disabled="state.saving" t-on-click="confirm">Cancel appointment</button>
+            </t>
+        </CareModal>
+    </t>
+</templates>
