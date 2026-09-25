@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_base.CareModal">
+        <div class="careos co-modal-scrim" t-on-mousedown="onScrimClick">
+            <div t-attf-class="co-modal {{props.large ? 'co-modal--lg' : ''}}" role="dialog" aria-modal="true" t-att-aria-label="props.title">
+                <div class="co-modal__header">
+                    <div class="co-modal__title" t-esc="props.title"/>
+                    <button type="button" class="co-modal__close" aria-label="Close" t-on-click="() => props.close()">×</button>
+                </div>
+                <div class="co-modal__body"><t t-slot="default"/></div>
+                <div t-if="props.slots.footer" class="co-modal__footer"><t t-slot="footer"/></div>
+            </div>
+        </div>
+    </t>
+</templates>

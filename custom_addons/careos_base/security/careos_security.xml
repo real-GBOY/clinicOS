@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="module_category_careos" model="ir.module.category">
+        <field name="name">CareOS</field>
+        <field name="sequence">5</field>
+    </record>
+
+    <record id="privilege_careos_role" model="res.groups.privilege">
+        <field name="name">CareOS Role</field>
+        <field name="sequence">1</field>
+        <field name="category_id" ref="module_category_careos"/>
+    </record>
+
+    <!-- Technical groups: implied by roles, never assigned directly. -->
+    <record id="group_careos_user" model="res.groups">
+        <field name="name">CareOS Staff</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        <field name="comment">Any CareOS staff member. Grants access to the CareOS application shell.</field>
+    </record>
+
+    <record id="group_careos_clinical" model="res.groups">
+        <field name="name">CareOS Clinical Record Access</field>
+        <field name="implied_ids" eval="[(4, ref('group_careos_user'))]"/>
+        <field name="comment">Read access to clinical data (conditions, clinical notes). Implied by clinical roles.</field>
+    </record>
+
+    <!-- Roles, as defined by the CareOS product specification (§3). -->
+    <record id="group_careos_reception" model="res.groups">
+        <field name="name">Receptionist</field>
+        <field name="sequence">10</field>
+        <field name="privilege_id" ref="privilege_careos_role"/>
+        <field name="implied_ids" eval="[(4, ref('group_careos_user'))]"/>
+        <field name="comment">Registers patients, books appointments, checks patients in and collects payments.</field>
+    </record>
+
+    <record id="group_careos_nurse" model="res.groups">
+        <field name="name">Nurse</field>
+        <field name="sequence">20</field>
+        <field name="privilege_id" ref="privilege_careos_role"/>
+        <field name="implied_ids" eval="[(4, ref('group_careos_clinical'))]"/>
+        <field name="comment">Prepares patients, records vitals and supports the queue.</field>
+    </record>
+
+    <record id="group_careos_doctor" model="res.groups">
+        <field name="name">Doctor</field>
+        <field name="sequence">30</field>
+        <field name="privilege_id" ref="privilege_careos_role"/>
+        <field name="implied_ids" eval="[(4, ref('group_careos_clinical'))]"/>
+        <field name="comment">Runs consultations: clinical notes, diagnoses, prescriptions and orders.</field>
+    </record>
+
+    <record id="group_careos_lab" model="res.groups">
+        <field name="name">Lab Technician</field>
+        <field name="sequence">40</field>
+        <field name="privilege_id" ref="privilege_careos_role"/>
+        <field name="implied_ids" eval="[(4, ref('group_careos_user'))]"/>
+        <field name="comment">Processes laboratory orders and enters results.</field>
+    </record>
+
+    <record id="group_careos_pharmacist" model="res.groups">
+        <field name="name">Pharmacist</field>
+        <field name="sequence">50</field>
+        <field name="privilege_id" ref="privilege_careos_role"/>
+        <field name="implied_ids" eval="[(4, ref('group_careos_user'))]"/>
+        <field name="comment">Dispenses prescriptions and manages pharmacy stock.</field>
+    </record>
+
+    <record id="group_careos_finance" model="res.groups">
+        <field name="name">Finance</field>
+        <field name="sequence">60</field>
+        <field name="privilege_id" ref="privilege_careos_role"/>
+        <field name="implied_ids" eval="[(4, ref('group_careos_user'))]"/>
+        <field name="comment">Invoices, payments, refunds, balances and financial reports.</field>
+    </record>
+
+    <record id="group_careos_manager" model="res.groups">
+        <field name="name">Clinic Manager</field>
+        <field name="sequence">70</field>
+        <field name="privilege_id" ref="privilege_careos_role"/>
+        <field name="implied_ids" eval="[(4, ref('group_careos_user'))]"/>
+        <field name="comment">Operational and financial oversight across departments.</field>
+    </record>
+
+    <record id="group_careos_admin" model="res.groups">
+        <field name="name">System Administrator</field>
+        <field name="sequence">80</field>
+        <field name="privilege_id" ref="privilege_careos_role"/>
+        <field name="implied_ids" eval="[(4, ref('group_careos_user'))]"/>
+        <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        <field name="comment">Configures branches, departments, users and roles. No clinical access.</field>
+    </record>
+</odoo>

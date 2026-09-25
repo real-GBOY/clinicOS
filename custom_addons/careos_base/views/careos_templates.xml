@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- CareOS brand in the document head: favicon and the two brand typefaces
+         (Inter for UI, Encode Sans Expanded for the wordmark). -->
+    <template id="layout_brand" inherit_id="web.layout" name="CareOS brand head">
+        <xpath expr="//link[@rel='shortcut icon']" position="replace">
+            <link type="image/svg+xml" rel="icon" t-att-href="x_icon or '/careos_base/static/src/img/favicon.svg'"/>
+        </xpath>
+        <xpath expr="//head/title" position="after">
+            <link rel="preconnect" href="https://fonts.googleapis.com"/>
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+            <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Encode+Sans+Expanded:wght@600;700;800&amp;display=swap"/>
+        </xpath>
+    </template>
+</odoo>

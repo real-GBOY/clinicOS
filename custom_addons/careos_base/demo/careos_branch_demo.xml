@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Synthetic organization structure for development and demos. -->
+<odoo>
+    <record id="branch_cairo" model="careos.branch">
+        <field name="name">Cairo Branch</field>
+        <field name="code">CAI</field>
+        <field name="sequence">1</field>
+        <field name="city">Cairo</field>
+        <field name="country_id" ref="base.eg"/>
+        <field name="timezone">Africa/Cairo</field>
+    </record>
+    <record id="branch_alexandria" model="careos.branch">
+        <field name="name">Alexandria Branch</field>
+        <field name="code">ALX</field>
+        <field name="sequence">2</field>
+        <field name="city">Alexandria</field>
+        <field name="country_id" ref="base.eg"/>
+        <field name="timezone">Africa/Cairo</field>
+    </record>
+    <record id="branch_menoufia" model="careos.branch">
+        <field name="name">Menoufia Branch</field>
+        <field name="code">MNF</field>
+        <field name="sequence">3</field>
+        <field name="city">Shebin El Kom</field>
+        <field name="country_id" ref="base.eg"/>
+        <field name="timezone">Africa/Cairo</field>
+    </record>
+
+    <record id="dept_cairo_cardiology" model="careos.department">
+        <field name="name">Cardiology</field>
+        <field name="branch_id" ref="branch_cairo"/>
+    </record>
+    <record id="dept_cairo_internal" model="careos.department">
+        <field name="name">Internal Medicine</field>
+        <field name="branch_id" ref="branch_cairo"/>
+    </record>
+    <record id="dept_alexandria_dermatology" model="careos.department">
+        <field name="name">Dermatology</field>
+        <field name="branch_id" ref="branch_alexandria"/>
+    </record>
+    <record id="dept_menoufia_internal" model="careos.department">
+        <field name="name">Internal Medicine</field>
+        <field name="branch_id" ref="branch_menoufia"/>
+    </record>
+</odoo>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Synthetic staff accounts, one per role. Password = login. Demo databases only. -->
+<odoo>
+    <record id="user_reception" model="res.users">
+        <field name="name">Salma Adel</field>
+        <field name="login">reception</field>
+        <field name="password">reception</field>
+        <field name="tz">Africa/Cairo</field>
+        <field name="group_ids" eval="[Command.link(ref('group_careos_reception'))]"/>
+        <field name="careos_branch_ids" eval="[Command.set([ref('branch_cairo'), ref('branch_alexandria')])]"/>
+        <field name="careos_branch_id" ref="branch_cairo"/>
+        <field name="action_id" ref="action_careos_app"/>
+    </record>
+    <record id="user_doctor" model="res.users">
+        <field name="name">Dr. Nourhan Saeed</field>
+        <field name="login">doctor</field>
+        <field name="password">doctor</field>
+        <field name="tz">Africa/Cairo</field>
+        <field name="group_ids" eval="[Command.link(ref('group_careos_doctor'))]"/>
+        <field name="careos_branch_ids" eval="[Command.set([ref('branch_cairo')])]"/>
+        <field name="careos_branch_id" ref="branch_cairo"/>
+        <field name="action_id" ref="action_careos_app"/>
+    </record>
+    <record id="user_doctor2" model="res.users">
+        <field name="name">Dr. Karim Fathy</field>
+        <field name="login">doctor2</field>
+        <field name="password">doctor2</field>
+        <field name="tz">Africa/Cairo</field>
+        <field name="group_ids" eval="[Command.link(ref('group_careos_doctor'))]"/>
+        <field name="careos_branch_ids" eval="[Command.set([ref('branch_cairo'), ref('branch_menoufia')])]"/>
+        <field name="careos_branch_id" ref="branch_cairo"/>
+        <field name="action_id" ref="action_careos_app"/>
+    </record>
+    <record id="user_nurse" model="res.users">
+        <field name="name">Hoda Mansour</field>
+        <field name="login">nurse</field>
+        <field name="password">nurse</field>
+        <field name="tz">Africa/Cairo</field>
+        <field name="group_ids" eval="[Command.link(ref('group_careos_nurse'))]"/>
+        <field name="careos_branch_ids" eval="[Command.set([ref('branch_cairo')])]"/>
+        <field name="careos_branch_id" ref="branch_cairo"/>
+        <field name="action_id" ref="action_careos_app"/>
+    </record>
+    <record id="user_lab" model="res.users">
+        <field name="name">Tamer Lotfy</field>
+        <field name="login">lab</field>
+        <field name="password">lab</field>
+        <field name="tz">Africa/Cairo</field>
+        <field name="group_ids" eval="[Command.link(ref('group_careos_lab'))]"/>
+        <field name="careos_branch_ids" eval="[Command.set([ref('branch_cairo')])]"/>
+        <field name="careos_branch_id" ref="branch_cairo"/>
+        <field name="action_id" ref="action_careos_app"/>
+    </record>
+    <record id="user_manager" model="res.users">
+        <field name="name">Rana Aziz</field>
+        <field name="login">manager</field>
+        <field name="password">manager</field>
+        <field name="tz">Africa/Cairo</field>
+        <field name="group_ids" eval="[Command.link(ref('group_careos_manager'))]"/>
+        <field name="careos_branch_ids" eval="[Command.set([ref('branch_cairo'), ref('branch_alexandria'), ref('branch_menoufia')])]"/>
+        <field name="careos_branch_id" ref="branch_cairo"/>
+        <field name="action_id" ref="action_careos_app"/>
+    </record>
+    <record id="base.user_admin" model="res.users">
+        <field name="careos_branch_ids" eval="[Command.link(ref('branch_cairo')), Command.link(ref('branch_alexandria')), Command.link(ref('branch_menoufia'))]"/>
+        <field name="careos_branch_id" ref="branch_cairo"/>
+    </record>
+</odoo>

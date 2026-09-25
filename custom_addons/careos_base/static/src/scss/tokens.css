@@ -1,0 +1,124 @@
+/*
+ * CareOS design tokens — the single source for colour, type, spacing, radius,
+ * elevation and motion. Values come from "CareOS Brand & Design System"
+ * (Claude Design). Components must reference these variables, never raw values.
+ *
+ * Scoped to .careos so the tokens cannot leak into Odoo's own backend views.
+ */
+.careos {
+    /* Primary — deep teal (hue 195). Brand, primary actions, links. */
+    --careos-primary-50: oklch(97% 0.09 195);
+    --careos-primary-100: oklch(93% 0.09 195);
+    --careos-primary-500: oklch(55% 0.09 195);
+    --careos-primary: oklch(47% 0.1 195);
+    --careos-primary-hover: oklch(40% 0.1 195);
+    --careos-primary-soft: oklch(94% 0.02 195);
+    --careos-primary-soft-text: oklch(40% 0.1 195);
+    --careos-focus-ring: oklch(90% 0.03 195);
+    --careos-chip: oklch(58% 0.14 195);          /* wordmark "os" chip */
+
+    /* Secondary — aqua (hue 165). Highlights, charts, "in consultation". */
+    --careos-secondary: oklch(55% 0.07 165);
+    --careos-secondary-soft: oklch(90% 0.05 165);
+    --careos-secondary-soft-text: oklch(35% 0.1 165);
+
+    /* Neutrals and surfaces — light mode. */
+    --careos-background: oklch(97% 0.004 240);
+    --careos-surface: #fff;
+    --careos-surface-elevated: oklch(99% 0.002 240);
+    --careos-surface-sunken: oklch(96% 0.005 240);
+    --careos-border: oklch(90% 0.005 240);
+    --careos-border-strong: oklch(85% 0.006 240);
+    --careos-divider: oklch(93% 0.004 240);
+    --careos-text: oklch(20% 0.01 240);
+    --careos-text-secondary: oklch(45% 0.01 240);
+    --careos-muted: oklch(60% 0.01 240);
+
+    /* Semantic status — shared lightness/chroma, hue varies. Always paired with text. */
+    --careos-success: oklch(45% 0.12 145);
+    --careos-success-soft: oklch(94% 0.03 145);
+    --careos-success-soft-text: oklch(38% 0.1 145);
+    --careos-warning: oklch(70% 0.15 80);
+    --careos-warning-soft: oklch(95% 0.04 80);
+    --careos-warning-soft-text: oklch(50% 0.13 80);
+    --careos-warning-border: oklch(82% 0.08 80);
+    --careos-danger: oklch(55% 0.18 25);
+    --careos-danger-soft: oklch(94% 0.04 25);
+    --careos-danger-soft-text: oklch(45% 0.16 25);
+    --careos-neutral-soft: oklch(92% 0.004 240);
+    --careos-neutral-soft-text: oklch(45% 0.01 240);
+
+    /* Navigation (dark sidebar). */
+    --careos-nav-bg: oklch(16% 0.02 230);
+    --careos-nav-item-active: oklch(28% 0.03 235);
+    --careos-nav-text: oklch(80% 0.008 235);
+    --careos-nav-text-muted: oklch(55% 0.01 235);
+    --careos-nav-border: oklch(28% 0.015 235);
+
+    /* Typography — Inter throughout; Encode Sans Expanded only for the wordmark. */
+    --careos-font: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --careos-font-wordmark: "Encode Sans Expanded", "Inter", sans-serif;
+    --careos-text-display: 800 40px/1.1 var(--careos-font);
+    --careos-text-h1: 700 28px/1.2 var(--careos-font);
+    --careos-text-h2: 700 22px/1.25 var(--careos-font);
+    --careos-text-h3: 600 18px/1.3 var(--careos-font);
+    --careos-text-h4: 600 15px/1.35 var(--careos-font);
+    --careos-text-page-title: 700 19px/1.3 var(--careos-font);
+    --careos-text-body-lg: 400 15px/1.55 var(--careos-font);
+    --careos-text-body: 400 13.5px/1.55 var(--careos-font);
+    --careos-text-body-sm: 400 12.5px/1.5 var(--careos-font);
+    --careos-text-caption: 600 11px/1.4 var(--careos-font);
+    --careos-text-button: 600 13px/1 var(--careos-font);
+
+    /* Spacing — 4px base. */
+    --careos-space-1: 4px;
+    --careos-space-2: 8px;
+    --careos-space-3: 12px;
+    --careos-space-4: 16px;
+    --careos-space-5: 20px;
+    --careos-space-6: 24px;
+    --careos-space-8: 32px;
+
+    /* Radius — "controlled 8–10px corners". */
+    --careos-radius-sm: 6px;
+    --careos-radius: 8px;
+    --careos-radius-lg: 10px;
+    --careos-radius-xl: 12px;
+    --careos-radius-pill: 100px;
+
+    /* Elevation — restrained. */
+    --careos-shadow-sm: 0 1px 2px rgba(20, 30, 40, 0.04);
+    --careos-shadow: 0 4px 16px rgba(20, 30, 40, 0.06);
+    --careos-shadow-popover: 0 10px 30px rgba(0, 0, 0, 0.12);
+    --careos-shadow-modal: 0 20px 60px rgba(0, 0, 0, 0.25);
+    --careos-scrim: rgba(20, 25, 35, 0.35);
+
+    /* Motion — confirms state, never decorates. */
+    --careos-motion-fast: 160ms ease-out;
+    --careos-motion: 200ms ease-out;
+    --careos-motion-overlay: 220ms ease-in-out;
+    --careos-motion-status: 300ms ease;
+
+    /* Layout. Breakpoints (for reference in media queries): 600 / 900 / 1200px. */
+    --careos-sidebar-width: 216px;
+    --careos-topbar-height: 52px;
+    --careos-content-max: 1440px;
+}
+
+/* Dark mode uses dedicated tokens, not an inverted light theme. */
+.careos[data-careos-theme="dark"] {
+    --careos-background: oklch(14% 0.02 230);
+    --careos-surface: oklch(18% 0.02 230);
+    --careos-surface-elevated: oklch(22% 0.02 230);
+    --careos-surface-sunken: oklch(16% 0.02 230);
+    --careos-border: oklch(30% 0.02 230);
+    --careos-border-strong: oklch(36% 0.02 230);
+    --careos-divider: oklch(26% 0.02 230);
+    --careos-text: oklch(95% 0.005 230);
+    --careos-text-secondary: oklch(78% 0.01 230);
+    --careos-muted: oklch(65% 0.01 230);
+    --careos-primary: oklch(65% 0.1 195);
+    --careos-primary-hover: oklch(72% 0.1 195);
+    --careos-success: oklch(65% 0.13 145);
+    --careos-nav-bg: oklch(12% 0.02 230);
+}

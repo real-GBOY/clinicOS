@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="careos_base.Wordmark">
+        <span class="co-wordmark" t-attf-style="font-size: {{props.size}}px" aria-label="CareOS">care<span class="co-wordmark__os">os</span></span>
+    </t>
+
+    <t t-name="careos_base.Badge">
+        <span t-attf-class="co-badge co-badge--{{props.tone}}" t-esc="props.label"/>
+    </t>
+
+    <t t-name="careos_base.Avatar">
+        <span t-attf-class="co-avatar {{props.large ? 'co-avatar--lg' : ''}}" t-att-title="props.name" aria-hidden="true" t-esc="initials"/>
+    </t>
+
+    <t t-name="careos_base.PageHeader">
+        <div class="co-page-header">
+            <div>
+                <h1 class="co-page-header__title" t-esc="props.title"/>
+                <div t-if="props.subtitle" class="co-page-header__subtitle" t-esc="props.subtitle"/>
+            </div>
+            <div t-if="props.slots?.actions" class="co-page-header__actions">
+                <t t-slot="actions"/>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="careos_base.EmptyState">
+        <div t-attf-class="co-empty {{props.error ? 'co-empty--error' : ''}}" t-att-role="props.error ? 'alert' : null">
+            <div class="co-empty__title" t-esc="props.title"/>
+            <div t-if="props.body" class="co-empty__body" t-esc="props.body"/>
+            <div t-if="props.slots?.default" class="co-empty__action"><t t-slot="default"/></div>
+        </div>
+    </t>
+
+    <t t-name="careos_base.LoadingState">
+        <div class="co-card co-card--padded" aria-busy="true" aria-label="Loading">
+            <t t-foreach="rowList" t-as="row" t-key="row">
+                <div class="co-skeleton" t-attf-style="width: {{90 - (row % 3) * 18}}%; margin: 10px 0;"/>
+            </t>
+        </div>
+    </t>
+
+    <t t-name="careos_base.Timeline">
+        <div class="co-timeline">
+            <t t-foreach="props.events" t-as="event" t-key="event.key">
+                <div class="co-timeline__item">
+                    <div class="co-timeline__date" t-esc="event.date"/>
+                    <div class="co-timeline__rail">
+                        <div t-attf-class="co-timeline__dot co-timeline__dot--{{event.tone or 'info'}}"/>
+                        <div t-if="!event_last" class="co-timeline__line"/>
+                    </div>
+                    <div class="co-timeline__content">
+                        <div class="co-timeline__title" t-esc="event.title"/>
+                        <div t-if="event.detail" class="co-timeline__detail" t-esc="event.detail"/>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+
+</templates>

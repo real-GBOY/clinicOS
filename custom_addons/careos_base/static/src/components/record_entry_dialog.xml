@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_base.RecordEntryDialog">
+        <CareModal title="props.title" close="props.close">
+            <form class="co-form-grid" t-on-submit.prevent="save">
+                <t t-foreach="props.fields" t-as="field" t-key="field.name">
+                    <label t-attf-class="co-field {{field.wide ? 'co-field--wide' : ''}} {{state.errors[field.name] ? 'co-field--error' : ''}}">
+                        <span class="co-field__label"><t t-esc="field.label"/><span t-if="field.required" class="co-required">*</span></span>
+                        <select t-if="field.type === 'select'" class="co-select" t-model="state.values[field.name]" t-att-name="field.name">
+                            <option t-if="!field.required" value="">—</option>
+                            <t t-foreach="field.options" t-as="option" t-key="option[0]">
+                                <option t-att-value="option[0]" t-att-selected="option[0] === state.values[field.name]" t-esc="option[1]"/>
+                            </t>
+                        </select>
+                        <textarea t-elif="field.type === 'textarea'" class="co-textarea" t-model="state.values[field.name]" t-att-name="field.name" t-att-placeholder="field.placeholder"/>
+                        <input t-elif="field.type === 'boolean'" type="checkbox" t-model="state.values[field.name]" t-att-name="field.name"/>
+                        <input t-elif="field.type === 'date'" type="date" class="co-input" t-model="state.values[field.name]" t-att-name="field.name"/>
+                        <input t-else="" type="text" class="co-input" t-model="state.values[field.name]" t-att-name="field.name" t-att-placeholder="field.placeholder"/>
+                        <span t-if="state.errors[field.name]" class="co-field__error" t-esc="state.errors[field.name]"/>
+                    </label>
+                </t>
+                <div t-if="state.serverError" class="co-alert co-alert--danger co-field--wide" role="alert" t-esc="state.serverError"/>
+                <button type="submit" class="d-none"/>
+            </form>
+            <t t-set-slot="footer">
+                <button type="button" class="co-btn co-btn--secondary" t-on-click="() => props.close()">Cancel</button>
+                <button type="button" class="co-btn co-btn--primary" t-att-disabled="state.saving" t-on-click="save" t-esc="props.submitLabel"/>
+            </t>
+        </CareModal>
+    </t>
+</templates>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="careos_branch_view_list" model="ir.ui.view">
+        <field name="name">careos.branch.list</field>
+        <field name="model">careos.branch</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="city"/>
+                <field name="timezone"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="careos_branch_view_form" model="ir.ui.view">
+        <field name="name">careos.branch.form</field>
+        <field name="model">careos.branch</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="timezone"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="phone"/>
+                            <field name="street"/>
+                            <field name="city"/>
+                            <field name="country_id"/>
+                        </group>
+                    </group>
+                    <field name="department_ids">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="name"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="careos_branch_action" model="ir.actions.act_window">
+        <field name="name">Branches</field>
+        <field name="res_model">careos.branch</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="careos_department_view_list" model="ir.ui.view">
+        <field name="name">careos.department.list</field>
+        <field name="model">careos.department</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="branch_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="careos_department_action" model="ir.actions.act_window">
+        <field name="name">Departments</field>
+        <field name="res_model">careos.department</field>
+        <field name="view_mode">list</field>
+    </record>
+</odoo>

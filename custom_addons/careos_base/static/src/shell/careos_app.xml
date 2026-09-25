@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_base.App">
+        <div t-attf-class="careos co-shell {{state.navOpen ? 'co-shell--nav-open' : ''}}">
+            <t t-if="state.error">
+                <div class="co-content">
+                    <EmptyState title="'CareOS is unavailable'" body="state.error" error="true"/>
+                </div>
+            </t>
+            <t t-elif="state.session">
+                <nav class="co-sidebar" aria-label="CareOS navigation">
+                    <div class="co-sidebar__brand"><Wordmark size="16"/></div>
+                    <t t-foreach="navGroups" t-as="group" t-key="group.key">
+                        <div class="co-sidebar__group" t-esc="group.label"/>
+                        <t t-foreach="group.items" t-as="item" t-key="item.id">
+                            <button type="button"
+                                    t-attf-class="co-sidebar__item {{activeNavId === item.id ? 'co-sidebar__item--active' : ''}}"
+                                    t-att-aria-current="activeNavId === item.id ? 'page' : null"
+                                    t-att-data-screen="item.id"
+                                    t-on-click="() => this.navigate(item.id)"
+                                    t-esc="item.label"/>
+                        </t>
+                    </t>
+                    <div class="co-sidebar__spacer"/>
+                    <button type="button" class="co-sidebar__user" t-on-click="toggleUserMenu"
+                            aria-haspopup="menu" t-att-aria-expanded="state.userMenuOpen ? 'true' : 'false'">
+                        <Avatar name="state.session.name"/>
+                        <span style="min-width: 0">
+                            <span class="co-sidebar__user-name d-block" t-esc="state.session.name"/>
+                            <span class="co-sidebar__user-meta d-block" t-esc="roleSummary"/>
+                        </span>
+                    </button>
+                    <div t-if="state.userMenuOpen" class="co-popover co-user-menu" role="menu">
+                        <button t-if="state.session.is_system" type="button" class="co-popover__item" role="menuitem" t-on-click="openBackend">System configuration</button>
+                        <button type="button" class="co-popover__item" role="menuitem" t-on-click="logout">Log out</button>
+                    </div>
+                </nav>
+                <div class="co-scrim" t-on-click="() => this.state.navOpen = false"/>
+
+                <div class="co-main">
+                    <header class="co-topbar">
+                        <button type="button" class="co-btn co-btn--icon co-topbar__menu-toggle" aria-label="Open navigation"
+                                t-on-click="() => this.state.navOpen = true">☰</button>
+                        <div class="co-topbar__context">
+                            <t t-if="state.session.branch">
+                                <button type="button" class="co-topbar__branch" t-on-click="toggleBranchMenu"
+                                        aria-haspopup="menu" t-att-aria-expanded="state.branchMenuOpen ? 'true' : 'false'">
+                                    <t t-esc="state.session.branch.name"/><span class="co-topbar__branch-caret">▾</span>
+                                </button>
+                            </t>
+                            <t t-if="parentScreen">
+                                <span class="co-topbar__sep">/</span>
+                                <button type="button" class="co-topbar__crumb co-topbar__crumb--link"
+                                        t-on-click="() => this.navigate(parentScreen.id)" t-esc="parentScreen.label"/>
+                            </t>
+                            <span class="co-topbar__sep">/</span>
+                            <span class="co-topbar__crumb" t-esc="state.pageTitle"/>
+                        </div>
+                        <div t-if="state.branchMenuOpen" class="co-popover co-branch-menu" role="menu">
+                            <t t-foreach="state.session.branches" t-as="branch" t-key="branch.id">
+                                <button type="button" role="menuitemradio"
+                                        t-attf-class="co-popover__item {{branch.id === state.session.branch.id ? 'co-popover__item--active' : ''}}"
+                                        t-att-aria-checked="branch.id === state.session.branch.id ? 'true' : 'false'"
+                                        t-on-click="() => this.switchBranch(branch)">
+                                    <t t-esc="branch.name"/>
+                                    <span t-if="branch.id === state.session.branch.id">✓</span>
+                                </button>
+                            </t>
+                        </div>
+                        <button type="button" class="co-topbar__search" t-on-click="openPalette" aria-label="Search CareOS">
+                            <span>Search patients, appointments, invoices…</span>
+                            <span class="co-topbar__kbd" t-esc="searchShortcut"/>
+                        </button>
+                    </header>
+
+                    <main class="co-content">
+                        <div class="co-content__inner">
+                            <t t-if="currentScreen">
+                                <t t-component="currentScreen.Component" t-key="state.renderKey" params="state.params"/>
+                            </t>
+                            <t t-else="">
+                                <EmptyState title="'No workspaces available'"
+                                            body="'Your account has no CareOS role with a workspace yet. Ask your administrator to assign one.'"/>
+                            </t>
+                        </div>
+                    </main>
+                </div>
+
+                <CommandPalette t-if="state.paletteOpen" close.bind="closePalette" onSelect.bind="onPaletteSelect"/>
+            </t>
+        </div>
+    </t>
+</templates>

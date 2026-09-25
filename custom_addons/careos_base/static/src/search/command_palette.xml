@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_base.CommandPalette">
+        <div class="co-palette-scrim" t-on-mousedown="onScrimClick">
+            <div class="co-palette" role="dialog" aria-modal="true" aria-label="Search CareOS">
+                <input t-ref="input" class="co-palette__input" type="search"
+                       placeholder="Search patients, appointments, invoices, prescriptions…"
+                       aria-label="Search" t-att-value="state.query" t-on-input="onInput"/>
+                <div class="co-palette__results" role="listbox">
+                    <t t-foreach="state.results" t-as="result" t-key="result.model + result.id">
+                        <button type="button" role="option"
+                                t-attf-class="co-palette__result {{result_index === state.active ? 'co-palette__result--active' : ''}}"
+                                t-att-aria-selected="result_index === state.active ? 'true' : 'false'"
+                                t-on-mouseenter="() => this.state.active = result_index"
+                                t-on-click="() => this.select(result)">
+                            <span>
+                                <span class="co-palette__title" t-esc="result.title"/>
+                                <span t-if="result.detail" class="co-palette__detail"> — <t t-esc="result.detail"/></span>
+                            </span>
+                            <span class="co-palette__kind" t-esc="result.kind"/>
+                        </button>
+                    </t>
+                    <div t-if="hint" class="co-palette__hint" t-esc="hint"/>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
