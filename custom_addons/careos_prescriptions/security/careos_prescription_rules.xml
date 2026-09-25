@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="rule_careos_prescription_doctor_own" model="ir.rule">
+            <field name="name">CareOS prescription: prescriber own</field>
+            <field name="model_id" ref="model_careos_prescription"/>
+            <field name="domain_force">[('provider_id.user_id', '=', user.id), ('branch_id', 'in', user.careos_branch_ids.ids)]</field>
+            <field name="groups" eval="[(4, ref('careos_base.group_careos_doctor'))]"/>
+        </record>
+        <record id="rule_careos_prescription_branch" model="ir.rule">
+            <field name="name">CareOS prescription: pharmacy and nursing at branch</field>
+            <field name="model_id" ref="model_careos_prescription"/>
+            <field name="domain_force">[('branch_id', 'in', user.careos_branch_ids.ids)]</field>
+            <field name="groups" eval="[(4, ref('careos_base.group_careos_pharmacist')), (4, ref('careos_base.group_careos_nurse'))]"/>
+        </record>
+        <record id="rule_careos_prescription_company" model="ir.rule">
+            <field name="name">CareOS prescription: multi-company</field>
+            <field name="model_id" ref="model_careos_prescription"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        </record>
+        <record id="rule_careos_prescription_line_company" model="ir.rule">
+            <field name="name">CareOS prescription line: multi-company</field>
+            <field name="model_id" ref="model_careos_prescription_line"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        </record>
+    </data>
+</odoo>

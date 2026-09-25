@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_careos_prescription_doctor,careos.prescription doctor,model_careos_prescription,careos_base.group_careos_doctor,1,1,1,0
+access_careos_prescription_pharmacist,careos.prescription pharmacist,model_careos_prescription,careos_base.group_careos_pharmacist,1,1,0,0
+access_careos_prescription_nurse,careos.prescription nurse,model_careos_prescription,careos_base.group_careos_nurse,1,0,0,0
+access_careos_prescription_line_doctor,careos.prescription.line doctor,model_careos_prescription_line,careos_base.group_careos_doctor,1,1,1,1
+access_careos_prescription_line_pharmacist,careos.prescription.line pharmacist,model_careos_prescription_line,careos_base.group_careos_pharmacist,1,0,0,0
+access_careos_prescription_line_nurse,careos.prescription.line nurse,model_careos_prescription_line,careos_base.group_careos_nurse,1,0,0,0

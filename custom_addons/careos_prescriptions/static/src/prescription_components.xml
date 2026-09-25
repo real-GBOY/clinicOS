@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_prescriptions.PrescriptionActions">
+        <span class="co-appt-actions">
+            <t t-foreach="actions" t-as="action" t-key="action.key">
+                <button type="button" t-att-name="'rx_' + action.key" t-att-disabled="state.busy"
+                        t-attf-class="co-btn co-btn--{{action.style}} {{props.small ? 'co-btn--sm' : ''}}"
+                        t-on-click="(ev) => this.run(action.key, ev)" t-esc="action.label"/>
+            </t>
+        </span>
+    </t>
+
+    <t t-name="careos_prescriptions.PrescriptionLinesTable">
+        <div class="co-table-scroll">
+            <table class="co-table">
+                <thead><tr><th>Medication</th><th>Dosage</th><th>Frequency</th><th class="co-hide-sm">Duration</th><th class="co-hide-md">Instructions</th><th>Status</th><th t-if="editable"/></tr></thead>
+                <tbody>
+                    <t t-foreach="lines" t-as="line" t-key="line.id">
+                        <tr>
+                            <td class="co-table__primary" t-esc="line.med"/>
+                            <td t-esc="line.dose"/>
+                            <td t-esc="line.freq"/>
+                            <td class="co-hide-sm" t-esc="line.duration"/>
+                            <td class="co-hide-md" t-esc="line.instructions or '—'"/>
+                            <td><Badge label="line.status" tone="lineTone ? lineTone(line) : 'neutral'"/></td>
+                            <td t-if="editable" class="text-end">
+                                <button type="button" class="co-btn co-btn--ghost co-btn--sm" t-on-click="() => this.removeLine(line)">Remove</button>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+        </div>
+    </t>
+
+    <t t-name="careos_prescriptions.EncounterPrescriptions">
+        <section t-if="prescriptions.length" class="co-card co-card--padded mt-3 co-encounter-rx">
+            <div class="co-section-label">Prescriptions</div>
+            <t t-foreach="prescriptions" t-as="rx" t-key="rx.id">
+                <div class="co-rx-block">
+                    <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-2">
+                        <span><strong t-esc="rx.name"/> <Badge label="rx.state_label" tone="tone(rx)"/></span>
+                        <PrescriptionActions rx="rx" onChanged="props.reload" small="true"/>
+                    </div>
+                    <div t-foreach="rx.allergy_warnings" t-as="warning" t-key="warning_index" class="co-alert co-alert--danger mb-2" role="alert">
+                        Allergy warning — <t t-esc="warning"/>
+                    </div>
+                    <div t-if="!rx.lines.length" class="co-muted mb-2">No medications yet.</div>
+                    <t t-else="" t-call="careos_prescriptions.PrescriptionLinesTable">
+                        <t t-set="lines" t-value="rx.lines"/>
+                        <t t-set="editable" t-value="rx.can_edit_lines"/>
+                        <t t-set="lineTone" t-value="(line) => this.tone(line)"/>
+                    </t>
+                    <form t-if="rx.can_edit_lines" class="co-rx-form" t-on-submit.prevent="() => this.addLine(rx)">
+                        <select class="co-select co-rx-form__med" name="rx_product" t-on-change="onMedChange">
+                            <option value="">Medication…</option>
+                            <t t-foreach="state.meds" t-as="med" t-key="med.id">
+                                <option t-att-value="med.id" t-att-selected="'' + med.id === state.line.product_id" t-esc="med.name"/>
+                            </t>
+                        </select>
+                        <input class="co-input" name="rx_dose" placeholder="Dose" t-model="state.line.dose"/>
+                        <input class="co-input" name="rx_frequency" placeholder="Frequency" t-model="state.line.frequency"/>
+                        <input class="co-input" type="number" min="1" name="rx_duration" title="Days" t-model="state.line.duration_days"/>
+                        <input class="co-input" type="number" min="1" name="rx_quantity" title="Packs" t-model="state.line.quantity"/>
+                        <input class="co-input" name="rx_instructions" placeholder="Instructions" t-model="state.line.instructions"/>
+                        <button type="submit" class="co-btn co-btn--secondary co-btn--sm" name="add_rx_line">Add</button>
+                    </form>
+                </div>
+            </t>
+        </section>
+    </t>
+
+    <t t-name="careos_prescriptions.PrescriptionList">
+        <div>
+            <PageHeader title="'Prescriptions'" subtitle="'Issued prescriptions are dispensed from the branch pharmacy'"/>
+            <div class="co-directory-toolbar">
+                <div class="co-segmented" role="group" aria-label="Status">
+                    <t t-foreach="filters" t-as="f" t-key="f[0]">
+                        <button type="button" t-attf-class="co-segmented__item {{state.state === f[0] ? 'co-segmented__item--active' : ''}}"
+                                t-on-click="() => this.setFilter(f[0])" t-esc="f[1]"/>
+                    </t>
+                </div>
+            </div>
+            <div t-if="state.error" class="co-card"><EmptyState title="'Prescriptions unavailable'" body="state.error" error="true"/></div>
+            <LoadingState t-elif="!state.rows" rows="5"/>
+            <div t-elif="!state.rows.length" class="co-card"><EmptyState title="'No prescriptions'" body="'Prescriptions written in encounters appear here.'"/></div>
+            <div t-else="" class="co-card co-table-scroll">
+                <table class="co-table co-table--interactive">
+                    <thead><tr><th>Prescription</th><th>Patient</th><th class="co-hide-sm">Medications</th><th class="co-hide-md">Prescriber</th><th>Status</th><th/></tr></thead>
+                    <tbody>
+                        <t t-foreach="state.rows" t-as="rx" t-key="rx.id">
+                            <tr t-on-click="() => this.open(rx)" tabindex="0" t-on-keydown="(ev) => ev.key === 'Enter' and this.open(rx)">
+                                <td class="co-table__sub" t-esc="rx.name"/>
+                                <td class="co-table__primary" t-esc="rx.patient.name"/>
+                                <td class="co-hide-sm" t-esc="meds(rx)"/>
+                                <td class="co-hide-md" t-esc="rx.provider.name"/>
+                                <td><Badge label="rx.state_label" tone="tone(rx)"/></td>
+                                <td class="text-end"><PrescriptionActions rx="rx" onChanged.bind="load" small="true"/></td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="careos_prescriptions.PrescriptionDetail">
+        <div>
+            <div t-if="state.error" class="co-card"><EmptyState title="'Prescription unavailable'" body="state.error" error="true"/></div>
+            <LoadingState t-elif="!state.rx" rows="5"/>
+            <t t-else="">
+                <div class="co-page-header">
+                    <div>
+                        <h1 class="co-page-header__title d-flex align-items-center gap-2 flex-wrap">
+                            Prescription — <button type="button" class="co-link-button" t-on-click="openPatient" t-esc="state.rx.patient.name"/>
+                            <Badge label="state.rx.state_label" tone="lineTone(state.rx)"/>
+                        </h1>
+                        <div class="co-page-header__subtitle"><t t-esc="state.rx.name"/> · <t t-esc="subtitle"/></div>
+                    </div>
+                    <div class="co-page-header__actions">
+                        <PrescriptionActions rx="state.rx" onChanged.bind="load"/>
+                    </div>
+                </div>
+                <div t-foreach="state.rx.allergy_warnings" t-as="warning" t-key="warning_index" class="co-alert co-alert--danger mb-3" role="alert">
+                    Allergy warning — <t t-esc="warning"/>
+                </div>
+                <div t-if="state.rx.dispensed_at" class="co-alert co-alert--success mb-3">
+                    Dispensed by <t t-esc="state.rx.dispensed_by"/> · stock issued from the branch pharmacy.
+                </div>
+                <div class="co-card">
+                    <t t-call="careos_prescriptions.PrescriptionLinesTable">
+                        <t t-set="lines" t-value="state.rx.lines"/>
+                        <t t-set="editable" t-value="false"/>
+                        <t t-set="lineTone" t-value="(line) => this.lineTone(line)"/>
+                    </t>
+                </div>
+            </t>
+        </div>
+    </t>
+
+    <t t-name="careos_prescriptions.CurrentMedicationsCard">
+        <section class="co-p360-section" aria-labelledby="co-sec-meds">
+            <div class="co-section-label" id="co-sec-meds">Current medications</div>
+            <div t-if="!props.profile.current_medications.length" class="co-muted co-list-row">No active medications.</div>
+            <t t-foreach="props.profile.current_medications" t-as="line" t-key="line.id">
+                <div class="co-list-row d-flex justify-content-between gap-2">
+                    <span><strong t-esc="line.med.split(' (')[0]"/> <span class="co-muted">· <t t-esc="line.dose"/> · <t t-esc="line.freq"/></span></span>
+                    <Badge label="line.status" tone="tone(line)"/>
+                </div>
+            </t>
+        </section>
+    </t>
+</templates>

@@ -1,0 +1,20 @@
+.co-rx-block + .co-rx-block {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--careos-divider);
+}
+.co-rx-form {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1.3fr 70px 70px 1.5fr auto;
+    gap: 6px;
+    margin-top: 10px;
+    align-items: center;
+}
+@media (max-width: 900px) {
+    .co-rx-form {
+        grid-template-columns: 1fr 1fr;
+    }
+    .co-rx-form__med {
+        grid-column: 1 / -1;
+    }
+}
