@@ -17,6 +17,11 @@ registry.category("web_tour.tours").add("careos_patient_registration", {
             },
         },
         {
+            content: "Open the patient directory",
+            trigger: ".co-sidebar__item[data-screen='patients']",
+            run: "click",
+        },
+        {
             content: "Open the registration dialog",
             trigger: "button[name='register_patient']",
             run: "click",
