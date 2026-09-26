@@ -49,7 +49,7 @@ missing, and where it goes next. It describes the product as it is implemented t
 | **Users** | Reception, doctors, nurses, lab technicians, pharmacists, finance, managers, administrators, patients |
 | **Delivery** | 14 Odoo modules; the `careos` meta module installs the full suite |
 | **Status** | Feature-complete against the product prototype; 196 automated tests passing in CI |
-| **License** | LGPL-3.0 (as declared in the module manifests) |
+| **License** | LGPL-3.0 (see [LICENSE](LICENSE)) |
 | **Repository** | https://github.com/real-GBOY/clinicOS |
 
 CareOS covers the whole outpatient day:

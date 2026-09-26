@@ -11,7 +11,7 @@ global search).
 """,
     "version": "19.0.1.0.0",
     "category": "CareOS",
-    "author": "JINX",
+    "author": "CareOS",
     "license": "LGPL-3",
     "depends": ["web", "mail", "auth_signup"],
     "data": [
