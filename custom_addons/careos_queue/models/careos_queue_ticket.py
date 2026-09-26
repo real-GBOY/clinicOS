@@ -1,5 +1,6 @@
 from odoo import _, api, fields, models
-from odoo.exceptions import AccessError, UserError
+from odoo.exceptions import UserError
+from odoo.addons.careos_base.models.authorization import has_role, require_role
 
 STATES = [
     ("waiting", "Waiting"),
@@ -107,8 +108,7 @@ class CareosQueueTicket(models.Model):
 
     def action_call(self):
         """Call the next patient to a room (queue-only transition)."""
-        if not self.env.su and not set(CALL_ROLES) & set(self.env.user._careos_role_keys()):
-            raise AccessError(_("Your role does not allow you to call patients."))
+        require_role(self.env, CALL_ROLES, _("Your role does not allow you to call patients."))
         self.check_access("write")
         self._careos_check_source("call")
         for ticket in self:
@@ -156,9 +156,8 @@ class CareosQueueTicket(models.Model):
     def _careos_available_actions(self):
         self.ensure_one()
         appointment_actions = self.appointment_id._careos_available_actions()
-        roles = set(self.env.user._careos_role_keys())
         actions = []
-        if self.state == "waiting" and (self.env.su or roles & set(CALL_ROLES)) and self.has_access("write"):
+        if self.state == "waiting" and has_role(self.env, CALL_ROLES) and self.has_access("write"):
             actions.append("call")
         # The board offers "start" once the patient has been called; starting
         # straight from waiting stays possible from the appointment itself.

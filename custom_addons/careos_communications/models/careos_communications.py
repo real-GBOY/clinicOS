@@ -3,8 +3,9 @@ from datetime import timedelta
 from markupsafe import Markup, escape
 
 from odoo import _, api, fields, models
-from odoo.exceptions import AccessError, UserError, ValidationError
+from odoo.exceptions import UserError, ValidationError
 from odoo.tools import html2plaintext
+from odoo.addons.careos_base.models.authorization import has_role, require_role
 
 INBOX_ROLES = {"reception", "doctor", "nurse", "manager", "admin"}
 REMINDER_LEAD = timedelta(hours=24)
@@ -32,8 +33,7 @@ class CareosPatient(models.Model):
 
     def careos_get_profile(self):
         profile = super().careos_get_profile()
-        roles = set(self.env.user._careos_role_keys())
-        profile["messages_access"] = self.env.su or bool(INBOX_ROLES & roles)
+        profile["messages_access"] = has_role(self.env, INBOX_ROLES)
         return profile
 
     def careos_get_conversation(self):
@@ -194,8 +194,7 @@ class CareosCommunications(models.AbstractModel):
 
     @api.model
     def _careos_require_inbox(self):
-        if not self.env.su and not INBOX_ROLES & set(self.env.user._careos_role_keys()):
-            raise AccessError(_("Your role does not have access to patient communication."))
+        require_role(self.env, INBOX_ROLES, _("Your role does not have access to patient communication."))
 
     @api.model
     def careos_inbox(self):

@@ -1,5 +1,6 @@
 from odoo import _, api, fields, models
-from odoo.exceptions import AccessError, ValidationError
+from odoo.exceptions import ValidationError
+from odoo.addons.careos_base.models.authorization import require_role
 
 
 WEEKDAYS = [(6, "Sun"), (0, "Mon"), (1, "Tue"), (2, "Wed"), (3, "Thu"), (4, "Fri"), (5, "Sat")]
@@ -15,9 +16,7 @@ class CareosSetup(models.AbstractModel):
 
     @api.model
     def _careos_require_admin(self):
-        user = self.env.user
-        if not (self.env.su or user.has_group("careos_base.group_careos_admin") or user.has_group("base.group_system")):
-            raise AccessError(_("Only administrators can run the setup guide."))
+        require_role(self.env, "admin", _("Only administrators can run the setup guide."))
 
     @api.model
     def _careos_branch(self):

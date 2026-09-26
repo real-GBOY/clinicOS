@@ -2,7 +2,8 @@ from collections import defaultdict
 from datetime import timedelta
 
 from odoo import _, api, fields, models
-from odoo.exceptions import AccessError, UserError
+from odoo.exceptions import UserError
+from odoo.addons.careos_base.models.authorization import require_role
 
 VIEW_ROLES = {"manager", "admin", "finance"}
 ALERT_FACTOR = 2.0          # a department at ≥ 2× the branch no-show rate is flagged
@@ -30,8 +31,7 @@ class CareosAnalytics(models.AbstractModel):
 
     @api.model
     def _careos_context(self):
-        if not self.env.su and not VIEW_ROLES & set(self.env.user._careos_role_keys()):
-            raise AccessError(_("Analytics are available to managers, finance and administrators."))
+        require_role(self.env, VIEW_ROLES, _("Analytics are available to managers, finance and administrators."))
         branch = self.env.user.careos_branch_id
         if not branch:
             raise UserError(_("Select a branch first."))
