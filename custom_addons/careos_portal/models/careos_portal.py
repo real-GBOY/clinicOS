@@ -167,12 +167,21 @@ class CareosPortal(models.AbstractModel):
         """Request an appointment; it stays a draft until the front desk confirms."""
         patient = self._careos_current_patient()
         branch = patient.branch_id or self.env["careos.branch"].sudo().search([("company_id", "=", patient.company_id.id)], limit=1)
-        start_dt = fields.Datetime.to_datetime(start)
-        if start_dt <= fields.Datetime.now():
+        # Arguments come from the browser: accept only a doctor and visit type
+        # the portal actually offers at the patient's branch.
+        options = self.env["careos.appointment"].sudo().careos_booking_options(branch.id)
+        if int(provider_id or 0) not in {p["id"] for p in options["providers"]} \
+                or int(type_id or 0) not in {t["id"] for t in options["types"]}:
+            raise ValidationError(_("Choose a doctor and a visit type from the list."))
+        try:
+            start_dt = fields.Datetime.to_datetime(start)
+        except (TypeError, ValueError):
+            start_dt = None
+        if not start_dt or start_dt <= fields.Datetime.now():
             raise ValidationError(_("Choose a time in the future."))
         appointment = self.env["careos.appointment"].sudo().create({
-            "patient_id": patient.id, "provider_id": provider_id, "type_id": type_id, "branch_id": branch.id,
-            "start": start_dt, "reason": reason or _("Requested online"),
+            "patient_id": patient.id, "provider_id": int(provider_id), "type_id": int(type_id), "branch_id": branch.id,
+            "start": start_dt, "reason": (reason or "").strip()[:500] or _("Requested online"),
         })
         Notification = self.env["careos.notification"]
         Notification._careos_notify(
