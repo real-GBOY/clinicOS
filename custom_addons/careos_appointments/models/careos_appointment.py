@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 
 import pytz
 
@@ -6,7 +6,6 @@ from odoo import _, api, fields, models
 from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.fields import Domain
 
-from odoo.addons.careos_base.models.res_users import CAREOS_ROLES
 from odoo.addons.careos_base.models.authorization import has_role
 
 STATES = [
@@ -78,7 +77,6 @@ HISTORY_RANK = {
     "created": 0, "confirmed_at": 1, "checked_in_at": 2, "called": 3,
     "started_at": 4, "completed_at": 5, "cancelled_at": 6, "no_show_at": 7,
 }
-
 
 class CareosAppointment(models.Model):
     _name = "careos.appointment"
@@ -501,54 +499,3 @@ class CareosAppointment(models.Model):
             "title": f"{self.name} · {self.patient_id.name}",
             "detail": f"{self._careos_summary()} · {dict(STATES)[self.state]}",
         }
-
-    # ------------------------------------------------------------------
-    # Demo data
-    # ------------------------------------------------------------------
-
-    @api.model
-    def _careos_demo_schedule(self):
-        """Synthetic schedule for demo databases: today's clinic at the Cairo
-        branch plus the coming days. Uses the real booking workflow."""
-        env = self.env
-        branch = env.ref("careos_base.branch_cairo")
-        types = {
-            "new": env.ref("careos_appointments.type_new_patient"),
-            "follow": env.ref("careos_appointments.type_follow_up"),
-            "consult": env.ref("careos_appointments.type_consultation"),
-        }
-        saeed = env.ref("careos_appointments.provider_saeed")
-        fathy = env.ref("careos_appointments.provider_fathy")
-        elsayed = env.ref("careos_appointments.provider_elsayed")
-        patient = lambda xmlid: env.ref(f"careos_patients.{xmlid}")
-        tz = branch._careos_tz()
-        today = branch._careos_today()
-
-        def at(day_offset, hour, minute=0):
-            local = tz.localize(datetime.combine(today + timedelta(days=day_offset), datetime.min.time()).replace(hour=hour, minute=minute))
-            return local.astimezone(pytz.utc).replace(tzinfo=None)
-
-        plan = [
-            (0, 9, 0, "patient_mona_youssef", saeed, "follow", "Blood pressure review"),
-            (0, 9, 30, "patient_karim_adel", saeed, "new", "Chest discomfort on exertion"),
-            (0, 10, 0, "patient_sara_ibrahim", fathy, "consult", "Diabetes follow-up"),
-            (0, 10, 30, "patient_ahmed_hassan", saeed, "follow", "Hypertension follow-up"),
-            (0, 11, 0, "patient_omar_nabil", fathy, "consult", "Recurring headaches"),
-            (0, 11, 30, "patient_laila_hassan", saeed, "follow", "Post-medication review"),
-            (0, 12, 0, "patient_karim_adel", elsayed, "consult", "Lab results discussion"),
-            (1, 9, 0, "patient_omar_nabil", saeed, "follow", "Follow-up"),
-            (2, 10, 30, "patient_ahmed_hassan", fathy, "consult", "Annual check"),
-        ]
-        rooms = {saeed: env.ref("careos_appointments.room_cairo_3"), fathy: env.ref("careos_appointments.room_cairo_5"),
-                 elsayed: env.ref("careos_appointments.room_cairo_2")}
-        for day_offset, hour, minute, patient_xmlid, provider, type_key, reason in plan:
-            self.create({
-                "patient_id": patient(patient_xmlid).id,
-                "provider_id": provider.id,
-                "type_id": types[type_key].id,
-                "branch_id": branch.id,
-                "room_id": rooms[provider].id,
-                "start": at(day_offset, hour, minute),
-                "reason": reason,
-            }).action_confirm()
-

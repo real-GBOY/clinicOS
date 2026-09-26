@@ -192,3 +192,16 @@ class CareosInventory(models.AbstractModel):
                     users, title, body=branch.name, kind="warning", screen="inventory",
                     dedupe_key=f"stock-{row['status']}-{branch.id}-{row['id']}",
                 )
+
+    @api.model
+    def _careos_adjust_stock(self, warehouse, product, quantity, lot_name, expiry):
+        """Set on-hand stock through an inventory adjustment (optionally into
+        a new lot with an expiry date). Used by setup, imports and tests."""
+        lot = self.env["stock.lot"]
+        if lot_name:
+            lot = lot.create({"name": lot_name, "product_id": product.id, "company_id": warehouse.company_id.id,
+                              "expiration_date": expiry})
+        self.env["stock.quant"].with_context(inventory_mode=True).create({
+            "product_id": product.id, "location_id": warehouse.lot_stock_id.id, "lot_id": lot.id,
+            "inventory_quantity": quantity,
+        }).action_apply_inventory()

@@ -15,9 +15,6 @@ appointments, queue tickets and posted invoices.
     "data": [
         "data/careos_analytics_cron.xml",
     ],
-    "demo": [
-        "demo/careos_analytics_demo.xml",
-    ],
     "assets": {
         "web.assets_backend": [
             "careos_analytics/static/src/**/*",

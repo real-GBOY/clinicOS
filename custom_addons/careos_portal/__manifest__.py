@@ -15,9 +15,6 @@ patient's portal read-only and invite patients from Patient 360.
     "data": [
         "views/careos_portal_templates.xml",
     ],
-    "demo": [
-        "demo/careos_portal_demo.xml",
-    ],
     "assets": {
         "web.assets_backend": [
             "careos_portal/static/src/portal/**/*",

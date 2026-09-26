@@ -47,7 +47,7 @@ class CareosInventory(models.AbstractModel):
                 "use_expiration_date": tracked,
             })
             env["ir.model.data"].create({
-                "name": f"demo_item_{index}", "module": "careos_inventory", "model": "product.product", "res_id": product.id,
+                "name": f"demo_item_{index}", "module": "careos_demo", "model": "product.product", "res_id": product.id,
                 "noupdate": True,  # created from code: keep out of the module cleanup
             })
             env["stock.warehouse.orderpoint"].create({
@@ -56,15 +56,4 @@ class CareosInventory(models.AbstractModel):
             })
             lot_name = f"B{today.strftime('%y%m')}-{index + 1:03d}" if tracked else None
             expiry = fields.Datetime.to_string(today + timedelta(days=expiry_days)) if tracked else None
-            self._careos_demo_receive(warehouse, product, stock, lot_name, expiry)
-
-    @api.model
-    def _careos_demo_receive(self, warehouse, product, quantity, lot_name, expiry):
-        lot = self.env["stock.lot"]
-        if lot_name:
-            lot = lot.create({"name": lot_name, "product_id": product.id, "company_id": warehouse.company_id.id,
-                              "expiration_date": expiry})
-        self.env["stock.quant"].with_context(inventory_mode=True).create({
-            "product_id": product.id, "location_id": warehouse.lot_stock_id.id, "lot_id": lot.id,
-            "inventory_quantity": quantity,
-        }).action_apply_inventory()
+            self._careos_adjust_stock(warehouse, product, stock, lot_name, expiry)

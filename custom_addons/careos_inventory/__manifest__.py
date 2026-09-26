@@ -15,9 +15,6 @@ Built on Odoo Inventory (quants, lots, reordering rules, pickings).
         "security/careos_inventory_security.xml",
         "data/careos_inventory_cron.xml",
     ],
-    "demo": [
-        "demo/careos_inventory_demo.xml",
-    ],
     "assets": {
         "web.assets_backend": [
             "careos_inventory/static/src/**/*",

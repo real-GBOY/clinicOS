@@ -17,9 +17,6 @@ Laboratory worklist.
         "security/careos_lab_rules.xml",
         "data/careos_lab_catalogue.xml",
     ],
-    "demo": [
-        "demo/careos_lab_demo.xml",
-    ],
     "assets": {
         "web.assets_backend": [
             "careos_laboratory/static/src/**/*",

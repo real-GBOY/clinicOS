@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Synthetic clinic activity, generated through the real workflows.
+     Relative to the install date. Demo databases only. -->
+<odoo>
+    <function model="careos.appointment" name="_careos_demo_schedule"/>
+    <function model="careos.appointment" name="_careos_demo_queue"/>
+    <function model="careos.encounter" name="_careos_demo_clinical"/>
+    <function model="careos.inventory" name="_careos_demo_inventory"/>
+    <function model="careos.inventory" name="_careos_cron_low_stock"/>
+    <function model="careos.prescription" name="_careos_demo_prescriptions"/>
+    <function model="careos.lab.order" name="_careos_demo_lab"/>
+    <function model="careos.billing" name="_careos_demo_billing"/>
+    <function model="careos.communications" name="_careos_demo_communications"/>
+    <function model="careos.analytics" name="_careos_demo_history"/>
+    <function model="careos.analytics" name="_careos_cron_insights"/>
+    <function model="careos.portal" name="_careos_demo_portal"/>
+</odoo>

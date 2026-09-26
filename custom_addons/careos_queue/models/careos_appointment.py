@@ -58,28 +58,3 @@ class CareosAppointment(models.Model):
         dashboard["kpis"].sort(key=lambda k: k["sequence"])
         dashboard["queue"] = {"waiting": waiting[:6], "in_consultation": board["in_consultation"]}
         return dashboard
-
-    @api.model
-    def _careos_demo_queue(self):
-        """Move part of today's demo schedule through check-in and the queue,
-        using the real workflow."""
-        env = self.env
-        ref = env.ref
-        steps = [
-            ("patient_mona_youssef", ("check_in", "call", "start", "complete")),
-            ("patient_karim_adel", ("check_in", "call", "start")),
-            ("patient_sara_ibrahim", ("check_in", "call")),
-            ("patient_ahmed_hassan", ("check_in",)),
-        ]
-        branch = ref("careos_base.branch_cairo")
-        day_start, day_end = branch._careos_day_bounds()
-        for patient_xmlid, actions in steps:
-            appointment = self.search([
-                ("patient_id", "=", ref(f"careos_patients.{patient_xmlid}").id),
-                ("start", ">=", day_start), ("start", "<", day_end), ("state", "=", "confirmed"),
-            ], order="start", limit=1)
-            for action in actions:
-                if action == "call":
-                    appointment.queue_ticket_ids.action_call()
-                else:
-                    getattr(appointment, f"action_{action}")()
