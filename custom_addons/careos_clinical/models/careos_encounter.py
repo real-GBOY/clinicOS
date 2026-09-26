@@ -2,12 +2,14 @@ from datetime import timedelta
 
 from odoo import _, api, fields, models
 from odoo.exceptions import AccessError, UserError, ValidationError
+from odoo.addons.careos_base.models.authorization import has_role, require_role
 
 STATES = [("open", "In progress"), ("done", "Completed")]
 
 VITAL_FIELDS = (
     "bp_systolic", "bp_diastolic", "heart_rate", "temperature", "weight", "height", "spo2", "respiratory_rate",
 )
+FOLLOW_UP_ROLES = {"reception", "doctor", "nurse", "manager"}
 CLINICAL_FIELDS = ("chief_complaint", "notes", "plan", "follow_up_date", "follow_up_reason")
 
 # Plausibility limits: values outside are almost certainly entry errors.
@@ -117,10 +119,9 @@ class CareosEncounter(models.Model):
             raise UserError(_("Use Complete encounter to sign off."))
         if self.filtered(lambda e: e.state == "done"):
             raise UserError(_("A completed encounter cannot be changed."))
-        roles = set(self.env.user._careos_role_keys())
-        if "doctor" not in roles:
+        if not has_role(self.env, "doctor"):
             # Nurses may record vitals only.
-            if not roles & {"nurse"} or set(vals) - set(VITAL_FIELDS):
+            if not has_role(self.env, "nurse") or set(vals) - set(VITAL_FIELDS):
                 raise AccessError(_("Only the treating doctor can edit the clinical record."))
         if set(vals) & set(VITAL_FIELDS):
             vals = {**vals, "vitals_recorded_at": fields.Datetime.now(), "vitals_recorded_by_id": self.env.uid}
@@ -133,8 +134,7 @@ class CareosEncounter(models.Model):
     def action_complete(self):
         """Doctor sign-off. Requires a diagnosis; closes the appointment if
         the patient is still in consultation."""
-        if not self.env.su and "doctor" not in self.env.user._careos_role_keys():
-            raise AccessError(_("Only a doctor can complete an encounter."))
+        require_role(self.env, "doctor", _("Only a doctor can complete an encounter."))
         self.check_access("write")
         for encounter in self:
             if encounter.state == "done":
@@ -188,8 +188,7 @@ class CareosEncounter(models.Model):
         self.ensure_one()
         self.check_access("read")
         patient = self.patient_id
-        roles = set(self.env.user._careos_role_keys())
-        is_doctor = "doctor" in roles or self.env.su
+        is_doctor = has_role(self.env, "doctor")
         can_write = self.state == "open" and self.has_access("write")
         previous = self.search([("patient_id", "=", patient.id), ("id", "!=", self.id), ("state", "=", "done")], limit=5)
         payload = {
@@ -251,15 +250,15 @@ class CareosEncounter(models.Model):
     def careos_follow_ups(self, days=7):
         """Follow-ups due within ``days`` (or overdue) with no future booking
         for the patient. Front desk sees patient, due date and reason only."""
-        roles = set(self.env.user._careos_role_keys())
-        if not self.env.su and not roles & {"reception", "doctor", "nurse", "manager"}:
-            raise AccessError(_("You do not have access to follow-ups."))
+        require_role(self.env, FOLLOW_UP_ROLES, _("You do not have access to follow-ups."))
         today = fields.Date.context_today(self)
         domain = [("follow_up_date", "!=", False), ("follow_up_date", "<=", today + timedelta(days=days))]
         branch = self.env.user.careos_branch_id
         if branch:
             domain.append(("branch_id", "=", branch.id))
-        Encounter = self if "doctor" in roles and not roles & {"reception", "manager"} else self.sudo()
+        # Doctors see their own follow-ups through record rules; the front desk and
+        # managers see the branch list (patient, due date and reason only).
+        Encounter = self.sudo() if has_role(self.env, {"reception", "manager"}) or not has_role(self.env, "doctor") else self
         encounters = Encounter.search(domain, order="follow_up_date")
         booked_patients = self.env["careos.appointment"].sudo().search([
             ("patient_id", "in", encounters.patient_id.ids),

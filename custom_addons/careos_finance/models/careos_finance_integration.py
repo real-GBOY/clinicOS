@@ -1,4 +1,7 @@
 from odoo import api, models
+from odoo.addons.careos_base.models.authorization import has_role
+
+from .careos_billing import VIEW_ROLES
 
 # Visit prices for the default visit types (EGP, as in the CareOS prototype).
 DEFAULT_TYPE_PRICES = {"New patient": 600.0, "Follow-up": 450.0, "Consultation": 500.0}
@@ -13,8 +16,7 @@ class CareosSearch(models.AbstractModel):
         have no accounting rights), limited to the user's branches."""
         results = super().careos_global_search(query, limit)
         query = (query or "").strip()
-        roles = set(self.env.user._careos_role_keys())
-        if len(query) >= 2 and roles & {"reception", "finance", "manager", "admin"}:
+        if len(query) >= 2 and has_role(self.env, VIEW_ROLES):
             for row in self.env["careos.billing"].careos_invoice_list(query=query, limit=limit):
                 results.append({
                     "model": "account.move", "kind": "Invoice", "screen": "invoice", "id": row["id"],

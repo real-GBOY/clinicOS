@@ -1,5 +1,6 @@
 from odoo import _, api, fields, models
 from odoo.exceptions import AccessError, UserError, ValidationError
+from odoo.addons.careos_base.models.authorization import has_role, require_role
 
 PAYMENT_METHODS = [("cash", "Cash"), ("card", "Card"), ("bank", "Bank transfer")]
 # Roles per billing action (spec §9 Finance row: reception collects payment,
@@ -44,8 +45,7 @@ class CareosPatient(models.Model):
 
     def careos_get_profile(self):
         profile = super().careos_get_profile()
-        roles = set(self.env.user._careos_role_keys())
-        profile["billing_access"] = self.env.su or bool(VIEW_ROLES & roles)
+        profile["billing_access"] = has_role(self.env, VIEW_ROLES)
         if profile["billing_access"]:
             moves = self.env["careos.billing"]._careos_patient_moves(self)
             profile["balance_due"] = sum(moves.mapped("amount_residual"))
@@ -87,13 +87,8 @@ class CareosBilling(models.AbstractModel):
     # ------------------------------------------------------------------
 
     @api.model
-    def _careos_roles(self):
-        return set(self.env.user._careos_role_keys())
-
-    @api.model
     def _careos_require(self, allowed):
-        if not self.env.su and not allowed & self._careos_roles():
-            raise AccessError(_("Your role does not allow this billing action."))
+        require_role(self.env, allowed, _("Your role does not allow this billing action."))
 
     @api.model
     def _careos_move(self, move_id):
@@ -166,7 +161,7 @@ class CareosBilling(models.AbstractModel):
                         for line in pending],
             "pending_total": sum(line["quantity"] * line["price_unit"] for line in pending),
             "currency": appointment.company_id.currency_id.symbol,
-            "can_bill": bool(pending) and (self.env.su or bool(BILL_ROLES & self._careos_roles())),
+            "can_bill": bool(pending) and has_role(self.env, BILL_ROLES),
         }
 
     @api.model
@@ -294,8 +289,7 @@ class CareosBilling(models.AbstractModel):
     @api.model
     def careos_invoice_detail(self, move_id):
         move = self._careos_move(move_id)
-        roles = self._careos_roles()
-        can_bill = self.env.su or bool(BILL_ROLES & roles)
+        can_bill = has_role(self.env, BILL_ROLES)
         summary = self._careos_summary(move)
         payments = [{
             "date": fields.Date.to_string(payment.date),
@@ -313,7 +307,7 @@ class CareosBilling(models.AbstractModel):
             "payments": payments,
             "can_post": can_bill and move.state == "draft",
             "can_pay": can_bill and move.state == "posted" and move.payment_state in ("not_paid", "partial"),
-            "can_refund": (self.env.su or bool(REFUND_ROLES & roles)) and move.state == "posted"
+            "can_refund": has_role(self.env, REFUND_ROLES) and move.state == "posted"
             and move.payment_state != "reversed",
             "methods": PAYMENT_METHODS,
         }

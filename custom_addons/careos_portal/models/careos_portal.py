@@ -2,8 +2,10 @@ from datetime import date, timedelta
 
 from odoo import _, api, fields, models
 from odoo.exceptions import AccessError, UserError, ValidationError
+from odoo.addons.careos_base.models.authorization import has_role, require_role
 
 PREVIEW_ROLES = {"reception", "doctor", "nurse", "manager", "admin"}
+INVITE_ROLES = {"reception", "admin"}
 NEW_RESULT_DAYS = 14
 
 
@@ -14,10 +16,9 @@ class CareosPatient(models.Model):
 
     def careos_get_profile(self):
         profile = super().careos_get_profile()
-        roles = set(self.env.user._careos_role_keys())
         profile["portal"] = {
             "active": bool(self.sudo().portal_user_id),
-            "can_invite": self.env.su or bool({"reception", "admin"} & roles),
+            "can_invite": has_role(self.env, INVITE_ROLES),
         }
         return profile
 
@@ -25,8 +26,7 @@ class CareosPatient(models.Model):
         """Give the patient a portal login (their e-mail) and send the
         invitation to set a password."""
         self.ensure_one()
-        if not self.env.su and not {"reception", "admin"} & set(self.env.user._careos_role_keys()):
-            raise AccessError(_("Only the front desk can invite patients to the portal."))
+        require_role(self.env, INVITE_ROLES, _("Only the front desk can invite patients to the portal."))
         self.check_access("write")
         patient = self.sudo()
         if not patient.email:
@@ -188,8 +188,7 @@ class CareosPortal(models.AbstractModel):
 
     @api.model
     def careos_preview(self, patient_id):
-        if not self.env.su and not PREVIEW_ROLES & set(self.env.user._careos_role_keys()):
-            raise AccessError(_("Your role cannot preview the patient portal."))
+        require_role(self.env, PREVIEW_ROLES, _("Your role cannot preview the patient portal."))
         patient = self.env["careos.patient"].browse(patient_id)
         patient.check_access("read")
         return self._careos_payload(patient, preview=True)

@@ -4,6 +4,7 @@ from odoo import SUPERUSER_ID, _, api, fields, models
 from odoo.exceptions import AccessError, ValidationError
 
 from .res_users import CAREOS_ROLES
+from .authorization import has_role, require_role
 
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
@@ -61,18 +62,15 @@ class CareosStaff(models.AbstractModel):
 
     @api.model
     def _careos_is_admin(self):
-        user = self.env.user
-        return self.env.su or user.has_group("careos_base.group_careos_admin") or user.has_group("base.group_system")
+        return has_role(self.env, "admin")
 
     @api.model
     def _careos_require_admin(self):
-        if not self._careos_is_admin():
-            raise AccessError(_("Only administrators can manage staff."))
+        require_role(self.env, "admin", _("Only administrators can manage staff."))
 
     @api.model
     def _careos_require_viewer(self):
-        if not (self._careos_is_admin() or self.env.user.has_group("careos_base.group_careos_manager")):
-            raise AccessError(_("You do not have access to staff administration."))
+        require_role(self.env, {"admin", "manager"}, _("You do not have access to staff administration."))
 
     @api.model
     def _careos_scope_domain(self):

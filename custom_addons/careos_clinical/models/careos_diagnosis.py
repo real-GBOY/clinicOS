@@ -1,5 +1,6 @@
 from odoo import _, api, fields, models
-from odoo.exceptions import AccessError, UserError
+from odoo.exceptions import UserError
+from odoo.addons.careos_base.models.authorization import require_role
 
 
 class CareosDiagnosis(models.Model):
@@ -37,8 +38,7 @@ class CareosDiagnosis(models.Model):
     def _check_editable(self):
         if self.env.su:
             return
-        if "doctor" not in self.env.user._careos_role_keys():
-            raise AccessError(_("Only a doctor can record diagnoses."))
+        require_role(self.env, "doctor", _("Only a doctor can record diagnoses."))
         if self.encounter_id.filtered(lambda e: e.state == "done"):
             raise UserError(_("A completed encounter cannot be changed."))
 

@@ -7,6 +7,7 @@ from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.fields import Domain
 
 from odoo.addons.careos_base.models.res_users import CAREOS_ROLES
+from odoo.addons.careos_base.models.authorization import has_role
 
 STATES = [
     ("draft", "Draft"),
@@ -234,9 +235,7 @@ class CareosAppointment(models.Model):
         return self.env.user._careos_role_keys()
 
     def _careos_role_allows(self, action):
-        if self.env.su:
-            return True
-        return bool(set(ACTION_ROLES[action]) & set(self._careos_user_roles()))
+        return has_role(self.env, ACTION_ROLES[action])
 
     def _careos_action_blocker(self, action):
         """Why ``action`` cannot run on this appointment now (None if it can).

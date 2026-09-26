@@ -1,5 +1,6 @@
 from odoo import _, api, fields, models
-from odoo.exceptions import AccessError, UserError, ValidationError
+from odoo.exceptions import UserError, ValidationError
+from odoo.addons.careos_base.models.authorization import has_role, require_role
 
 STATES = [
     ("ordered", "Ordered"),
@@ -114,8 +115,7 @@ class CareosLabOrder(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
-        if not self.env.su and "doctor" not in self.env.user._careos_role_keys():
-            raise AccessError(_("Only doctors can order laboratory tests."))
+        require_role(self.env, "doctor", _("Only doctors can order laboratory tests."))
         for vals in vals_list:
             if not vals.get("name") or vals["name"] == _("New"):
                 vals["name"] = self.env["ir.sequence"].next_by_code("careos.lab.order") or _("New")
@@ -148,8 +148,7 @@ class CareosLabOrder(models.Model):
 
     def _careos_transition(self, action):
         sources, target, roles = TRANSITIONS[action]
-        if not self.env.su and not roles & set(self.env.user._careos_role_keys()):
-            raise AccessError(_("Your role cannot perform this laboratory step."))
+        require_role(self.env, roles, _("Your role cannot perform this laboratory step."))
         self.check_access("write")
         for order in self:
             if order.state not in sources:
@@ -175,8 +174,7 @@ class CareosLabOrder(models.Model):
     def careos_save_results(self, values):
         """Store result values ({result_id: value}) while processing."""
         self.ensure_one()
-        if not self.env.su and "lab" not in self.env.user._careos_role_keys():
-            raise AccessError(_("Only the laboratory enters results."))
+        require_role(self.env, "lab", _("Only the laboratory enters results."))
         if self.state != "processing":
             raise UserError(_("Results can be entered while the sample is processing."))
         self.check_access("write")
@@ -212,11 +210,10 @@ class CareosLabOrder(models.Model):
     # ------------------------------------------------------------------
 
     def _careos_actions(self):
-        roles = set(self.env.user._careos_role_keys())
         can_write = self.has_access("write")
         actions = []
         for action, (sources, _target, action_roles) in TRANSITIONS.items():
-            if self.state in sources and can_write and (self.env.su or action_roles & roles):
+            if self.state in sources and can_write and has_role(self.env, action_roles):
                 actions.append(action)
         return actions
 

@@ -1,4 +1,5 @@
 from odoo import _, api, fields, models
+from odoo.addons.careos_base.models.authorization import has_role
 
 
 class CareosEncounter(models.Model):
@@ -11,7 +12,7 @@ class CareosEncounter(models.Model):
         Rx = self.env["careos.prescription"]
         payload["prescriptions"] = [rx._careos_payload() for rx in Rx.search([("encounter_id", "=", self.id)])] \
             if Rx.has_access("read") else []
-        payload["can_prescribe"] = self.state == "open" and ("doctor" in self.env.user._careos_role_keys() or self.env.su)
+        payload["can_prescribe"] = self.state == "open" and has_role(self.env, "doctor")
         return payload
 
     def careos_new_prescription(self):

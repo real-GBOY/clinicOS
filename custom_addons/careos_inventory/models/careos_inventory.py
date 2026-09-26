@@ -1,7 +1,8 @@
 from datetime import timedelta
 
 from odoo import _, api, fields, models
-from odoo.exceptions import AccessError, UserError, ValidationError
+from odoo.exceptions import UserError, ValidationError
+from odoo.addons.careos_base.models.authorization import has_role, require_role
 
 ITEM_TYPES = [("medication", "Medication"), ("supply", "Supplies"), ("lab", "Lab consumable")]
 EXPIRY_WARNING_DAYS = 30
@@ -35,10 +36,7 @@ class CareosInventory(models.AbstractModel):
 
     @api.model
     def _careos_check_roles(self, allowed):
-        if self.env.su:
-            return
-        if not allowed & set(self.env.user._careos_role_keys()):
-            raise AccessError(_("Your role does not have access to inventory."))
+        require_role(self.env, allowed, _("Your role does not have access to inventory."))
 
     @api.model
     def _careos_warehouse(self, branch=None):
@@ -115,7 +113,7 @@ class CareosInventory(models.AbstractModel):
                  "value": sum(r["status"] == "expiring" for r in all_rows), "tone": "danger"},
             ],
             "items": rows,
-            "can_receive": self.env.su or bool(RECEIVE_ROLES & set(self.env.user._careos_role_keys())),
+            "can_receive": has_role(self.env, RECEIVE_ROLES),
         }
 
     @api.model

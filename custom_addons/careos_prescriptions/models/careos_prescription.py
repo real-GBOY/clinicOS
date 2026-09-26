@@ -1,7 +1,8 @@
 from datetime import timedelta
 
 from odoo import _, api, fields, models
-from odoo.exceptions import AccessError, UserError, ValidationError
+from odoo.exceptions import UserError, ValidationError
+from odoo.addons.careos_base.models.authorization import has_role, require_role
 
 STATES = [
     ("draft", "Draft"),
@@ -65,8 +66,7 @@ class CareosPrescription(models.Model):
     def _check_prescriber(self):
         if self.env.su:
             return
-        if "doctor" not in self.env.user._careos_role_keys():
-            raise AccessError(_("Only doctors can prescribe."))
+        require_role(self.env, "doctor", _("Only doctors can prescribe."))
         for rx in self:
             if rx.encounter_id.state != "open":
                 raise UserError(_("Prescriptions can only be written during an open encounter."))
@@ -77,8 +77,7 @@ class CareosPrescription(models.Model):
 
     def _careos_transition(self, action, extra=None):
         sources, target, roles = TRANSITIONS[action]
-        if not self.env.su and not roles & set(self.env.user._careos_role_keys()):
-            raise AccessError(_("Your role cannot %s prescriptions.", action))
+        require_role(self.env, roles, _("Your role cannot %s prescriptions.", action))
         self.check_access("write")
         for rx in self:
             if rx.state not in sources:
@@ -104,9 +103,7 @@ class CareosPrescription(models.Model):
     def action_dispense(self):
         """Pharmacy hands over the medicines: stock leaves the branch store in
         the same transaction as the status change."""
-        roles = set(self.env.user._careos_role_keys())
-        if not self.env.su and "pharmacy" not in roles:
-            raise AccessError(_("Only pharmacists dispense prescriptions."))
+        require_role(self.env, "pharmacy", _("Only pharmacists dispense prescriptions."))
         for rx in self:
             if rx.state != "issued":
                 raise UserError(_("%(ref)s is %(state)s.", ref=rx.name, state=dict(STATES)[rx.state]))
@@ -150,12 +147,10 @@ class CareosPrescription(models.Model):
 
     def _careos_payload(self):
         self.ensure_one()
-        roles = set(self.env.user._careos_role_keys())
-        is_su = self.env.su
         actions = []
         can_write = self.has_access("write")
         for action, (sources, _target, action_roles) in TRANSITIONS.items():
-            if self.state in sources and can_write and (is_su or action_roles & roles):
+            if self.state in sources and can_write and has_role(self.env, action_roles):
                 actions.append(action)
         return {
             "id": self.id,
@@ -173,7 +168,7 @@ class CareosPrescription(models.Model):
             "dispensed_by": self.dispensed_by_id.name or "",
             "allergy_warnings": self._careos_allergy_warnings(),
             "actions": actions,
-            "can_edit_lines": self.state == "draft" and can_write and (is_su or "doctor" in roles),
+            "can_edit_lines": self.state == "draft" and can_write and has_role(self.env, "doctor"),
         }
 
     def careos_get_detail(self):
@@ -250,8 +245,7 @@ class CareosPrescriptionLine(models.Model):
     def _check_editable(self):
         if self.env.su:
             return
-        if "doctor" not in self.env.user._careos_role_keys():
-            raise AccessError(_("Only doctors can change prescriptions."))
+        require_role(self.env, "doctor", _("Only doctors can change prescriptions."))
         if self.prescription_id.filtered(lambda rx: rx.state != "draft"):
             raise UserError(_("An issued prescription cannot be changed. Cancel it and write a new one."))
 

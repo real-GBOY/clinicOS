@@ -3,6 +3,7 @@ import logging
 
 from odoo import _, api, fields, models
 from odoo.exceptions import AccessError, UserError
+from odoo.addons.careos_base.models.authorization import has_role, require_role
 
 _logger = logging.getLogger(__name__)
 
@@ -126,19 +127,17 @@ class CareosAi(models.AbstractModel):
     @api.model
     def careos_status(self):
         config = self._careos_config()
-        roles = set(self.env.user._careos_role_keys())
         return {
             "enabled": config["enabled"],
-            "can_use": self.env.su or bool(ASSIST_ROLES & roles),
-            "is_admin": "admin" in roles or self.env.user.has_group("base.group_system"),
+            "can_use": has_role(self.env, ASSIST_ROLES),
+            "is_admin": has_role(self.env, "admin"),
         }
 
     @api.model
     def careos_configure(self, enabled, api_key=None):
         """Administrators switch CareOS Intelligence on and may store an API key
         (otherwise the SDK uses the server's ANTHROPIC_API_KEY / credentials)."""
-        if not self.env.user.has_group("careos_base.group_careos_admin") and not self.env.user.has_group("base.group_system"):
-            raise AccessError(_("Only administrators can configure CareOS Intelligence."))
+        require_role(self.env, "admin", _("Only administrators can configure CareOS Intelligence."))
         params = self.env["ir.config_parameter"].sudo()
         params.set_param("careos_ai.enabled", "1" if enabled else "0")
         if api_key is not None:
