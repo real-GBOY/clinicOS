@@ -16,9 +16,6 @@ the branch store, current medications on Patient 360.
         "security/careos_prescription_rules.xml",
         "data/careos_prescription_data.xml",
     ],
-    "demo": [
-        "demo/careos_prescription_demo.xml",
-    ],
     "assets": {
         "web.assets_backend": [
             "careos_prescriptions/static/src/**/*",

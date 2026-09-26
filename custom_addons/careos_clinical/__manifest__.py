@@ -18,9 +18,6 @@ clinical history.
         "security/careos_clinical_rules.xml",
         "data/ir_sequence_data.xml",
     ],
-    "demo": [
-        "demo/careos_clinical_demo.xml",
-    ],
     "assets": {
         "web.assets_backend": [
             "careos_clinical/static/src/**/*",

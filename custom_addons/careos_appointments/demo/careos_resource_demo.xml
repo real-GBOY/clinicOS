@@ -48,5 +48,4 @@
         <field name="default_room_id" ref="room_alexandria_1"/>
     </record>
 
-    <function model="careos.appointment" name="_careos_demo_schedule"/>
 </odoo>

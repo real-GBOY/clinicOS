@@ -15,9 +15,6 @@ desk, refunds for finance, overdue alerts, Patient 360 billing.
         "security/careos_finance_security.xml",
         "data/careos_finance_data.xml",
     ],
-    "demo": [
-        "demo/careos_finance_demo.xml",
-    ],
     "assets": {
         "web.assets_backend": [
             "careos_finance/static/src/**/*",

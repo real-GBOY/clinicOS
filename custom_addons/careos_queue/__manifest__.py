@@ -15,9 +15,6 @@ reception dashboard.
         "security/ir.model.access.csv",
         "security/careos_queue_rules.xml",
     ],
-    "demo": [
-        "demo/careos_queue_demo.xml",
-    ],
     "assets": {
         "web.assets_backend": [
             "careos_queue/static/src/**/*",

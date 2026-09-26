@@ -15,9 +15,6 @@ providers (e-mail built in), and the Communication Center.
         "security/ir.model.access.csv",
         "data/careos_communications_data.xml",
     ],
-    "demo": [
-        "demo/careos_communications_demo.xml",
-    ],
     "assets": {
         "web.assets_backend": [
             "careos_communications/static/src/**/*",

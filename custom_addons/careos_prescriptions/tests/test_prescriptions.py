@@ -23,8 +23,8 @@ class CareosPharmacyCase(CareosVisitCase):
         cls.amoxicillin = Product.create({"name": "Amoxicillin 500mg (21 caps)", "type": "consu", "is_storable": True,
                                           "careos_item_type": "medication", "list_price": 95, **cls._no_tax()})
         Inventory = cls.env["careos.inventory"]
-        Inventory._careos_demo_receive(cls.warehouse, cls.lisinopril, 10, None, None)
-        Inventory._careos_demo_receive(cls.warehouse, cls.amoxicillin, 1, None, None)
+        Inventory._careos_adjust_stock(cls.warehouse, cls.lisinopril, 10, None, None)
+        Inventory._careos_adjust_stock(cls.warehouse, cls.amoxicillin, 1, None, None)
 
     @classmethod
     def _no_tax(cls):
