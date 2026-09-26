@@ -370,4 +370,4 @@ The full list is in [docs/backlog.md](docs/backlog.md).
 
 ## License
 
-LGPL-3.0, as declared in each module's manifest.
+[LGPL-3.0](LICENSE), the same license as Odoo itself. Declared in every module's manifest.
