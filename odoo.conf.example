@@ -7,13 +7,14 @@ db_host = localhost
 db_port = 5432
 db_user = odoo
 db_password = odoo
-; Windows PostgreSQL can't use LC_COLLATE 'C' with a different ctype (Odoo's
-; default when cloning template0), so clone template1 instead.
+; Windows only: PostgreSQL there can't use LC_COLLATE 'C' with a different ctype
+; (Odoo's default when cloning template0), so clone template1 instead.
+; Remove this line on Linux/macOS if template1 has a non-UTF8 encoding.
 db_template = template1
 
-; Paths
-addons_path = E:/Clients/odoo Projects/clinicOS/odoo/addons,E:/Clients/odoo Projects/clinicOS/odoo/odoo/addons,E:/Clients/odoo Projects/clinicOS/custom_addons
-data_dir = E:/Clients/odoo Projects/clinicOS/data
+; Paths (relative to the repository root; run odoo-bin from there, or use absolute paths)
+addons_path = odoo/addons,odoo/odoo/addons,custom_addons
+data_dir = data
 
 ; Server
 http_port = 8069
