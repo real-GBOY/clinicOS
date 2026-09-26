@@ -95,7 +95,6 @@ class CareosPortal(models.AbstractModel):
         invoices = self.env["account.move"].sudo().search([
             ("careos_patient_id", "=", patient.id), ("move_type", "=", "out_invoice"), ("state", "=", "posted"),
         ], order="invoice_date desc", limit=20)
-        Billing = self.env["careos.billing"].sudo()
         messages = patient._careos_patient_messages()
         return {
             "preview": preview,
@@ -115,7 +114,7 @@ class CareosPortal(models.AbstractModel):
                 "results": [r._careos_payload() for r in order.result_ids],
             } for order in orders],
             "invoices": [{
-                **Billing._careos_summary(move),
+                **move._careos_summary(),
                 "pay_url": move.get_portal_url() if move.payment_state in ("not_paid", "partial") else False,
             } for move in invoices],
             "balance_due": sum(invoices.mapped("amount_residual")),
