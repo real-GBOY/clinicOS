@@ -1,0 +1,79 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  TEST_TAGS: >-
+    /careos_base,/careos_patients,/careos_appointments,/careos_queue,/careos_clinical,/careos_inventory,/careos_prescriptions,/careos_laboratory,/careos_finance,/careos_communications,/careos_analytics,/careos_ai,/careos_portal,/careos
+
+jobs:
+  odoo-tests:
+    name: CareOS test suite (Odoo 19)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: odoo
+          POSTGRES_PASSWORD: odoo
+          POSTGRES_DB: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+      - name: Check out CareOS
+        uses: actions/checkout@v4
+
+      - name: Check out Odoo 19
+        uses: actions/checkout@v4
+        with:
+          repository: odoo/odoo
+          ref: "19.0"
+          path: odoo
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: odoo/requirements.txt
+
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libldap2-dev libsasl2-dev libpq-dev
+
+      - name: Install Python packages
+        run: pip install -r odoo/requirements.txt anthropic freezegun websocket-client
+
+      - name: Run the full suite on a fresh database (with demo data and browser tours)
+        shell: bash
+        run: |
+          python odoo/odoo-bin \
+            --addons-path=odoo/addons,odoo/odoo/addons,custom_addons \
+            --db_host=localhost --db_port=5432 --db_user=odoo --db_password=odoo \
+            -d careos_ci --with-demo -i careos,careos_demo \
+            --test-enable --test-tags "$TEST_TAGS" \
+            --http-port=8069 --stop-after-init --log-level=test 2>&1 | tee odoo-test.log
+          # Fail on test failures, and also if the suite did not run at all.
+          grep -E "0 failed, 0 error\(s\) of [0-9]+ tests" odoo-test.log
+
+      - name: Upload the test log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: odoo-test-log
+          path: odoo-test.log
+          retention-days: 14
