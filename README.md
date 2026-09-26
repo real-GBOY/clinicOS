@@ -1,5 +1,7 @@
 # CareOS — the operating system for modern clinics
 
+[![tests](https://github.com/real-GBOY/clinicOS/actions/workflows/tests.yml/badge.svg)](https://github.com/real-GBOY/clinicOS/actions/workflows/tests.yml)
+
 CareOS runs a clinic group end to end on **Odoo 19**: patient registration, scheduling, check-in and the
 live queue, consultations, prescriptions and dispensing, laboratory, inventory, billing, patient
 messaging, analytics, assistive AI and a patient portal.
@@ -153,6 +155,7 @@ Key decisions:
 | `careos_ai` | Assistive AI drawer (Claude), de-identified context, human review, audit |
 | `careos_portal` | Patient portal and "View as patient" preview for staff |
 | `careos` | Meta module that installs everything, plus the setup guide |
+| `careos_demo` | Demo databases only: generates a clinic day and eight weeks of history through the real workflows |
 
 Install `careos` to get the whole suite. Full details are in [docs/modules.md](docs/modules.md).
 
@@ -209,10 +212,11 @@ Edit `odoo.conf`:
 
 ### 5. Create a database
 
-With demo data (sample clinic, staff, patients and eight weeks of history):
+With demo data (sample clinic, staff and patients from the modules, plus clinic activity and eight weeks
+of history from `careos_demo`):
 
 ```bash
-python odoo/odoo-bin -c odoo.conf -d careos_demo --with-demo -i careos --stop-after-init
+python odoo/odoo-bin -c odoo.conf -d careos_demo --with-demo -i careos,careos_demo --stop-after-init
 ```
 
 For a real clinic (empty), start without demo data and set the company's country and currency first, so the
@@ -267,11 +271,13 @@ env["careos.appointment"]._careos_demo_schedule(); env["careos.appointment"]._ca
 
 ## Running the tests
 
-All CareOS tests are tagged `careos`: 180 tests, including browser tours for registration, booking, the
-reception day, a full doctor visit, the patient portal and staff administration.
+All CareOS tests are tagged `careos`: 196 tests, including browser tours for registration, booking, the
+reception day, a full doctor visit, the patient portal and staff administration, and a security abuse
+suite that attacks the backend directly (forged ids, other branches, forged states, restricted fields,
+portal id guessing, private methods over JSON-RPC). GitHub Actions runs the full suite on every push.
 
 ```bash
-python odoo/odoo-bin -c odoo.conf -d careos_ci --with-demo -i careos --test-enable \
+python odoo/odoo-bin -c odoo.conf -d careos_ci --with-demo -i careos,careos_demo --test-enable \
   --test-tags /careos_base,/careos_patients,/careos_appointments,/careos_queue,/careos_clinical,/careos_inventory,/careos_prescriptions,/careos_laboratory,/careos_finance,/careos_communications,/careos_analytics,/careos_ai,/careos_portal,/careos \
   --http-port 8079 --stop-after-init --log-level=test
 ```
@@ -298,7 +304,8 @@ The server enforces every permission. Hiding a button is never the only control.
   themselves, there is always at least one active admin, and every change is logged.
 - **Passwords** are never set or seen by other staff; invitations use Odoo's set-password link.
 
-The full role × action matrix is in [docs/security.md](docs/security.md).
+The full role × action matrix is in [docs/security.md](docs/security.md); the authorization pipeline and
+other architecture rules are in [docs/architecture.md](docs/architecture.md#architecture-governance).
 
 ## AI assistance
 

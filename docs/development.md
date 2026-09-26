@@ -14,7 +14,7 @@
 .\run.ps1
 
 # Fresh demo database with CareOS installed (demo users/patients are synthetic)
-.\.venv\Scripts\python.exe odoo\odoo-bin -c odoo.conf -d careos_demo --with-demo -i careos --stop-after-init
+.\.venv\Scripts\python.exe odoo\odoo-bin -c odoo.conf -d careos_demo --with-demo -i careos,careos_demo --stop-after-init
 
 # Upgrade after changing data/views
 .\run.ps1 -d careos_demo -u careos
@@ -43,6 +43,8 @@ Demo providers: Dr. Nourhan Saeed (login `doctor`), Dr. Karim Fathy (`doctor2`),
 Dr. Hassan Ali (no login). Providers, rooms and visit types are configured under CareOS Configuration.
 
 ## Demo schedule
+
+Clinic activity comes from the `careos_demo` module (generators only, installed on demo databases).
 
 `careos_appointments` demo data books today's clinic at the Cairo branch (09:00–12:00) plus the next two
 days, relative to the **install date**; `careos_queue` demo checks four of them in and moves them through the

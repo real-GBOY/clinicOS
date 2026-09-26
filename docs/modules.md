@@ -15,7 +15,8 @@
 | `careos_analytics` | Implemented | `careos_finance` | Manager dashboard (revenue MTD, visits, no-show rate, outstanding, department revenue, utilization), Analytics (operations / finance / patients), insight cron, 8-week demo history |
 | `careos_ai` | Implemented | `careos_analytics`, Python `anthropic` | Assistive AI drawer (patient, encounter, reception, manager, invoice contexts), de-identified context, audit trail, human review before any chart write, off until an admin enables it |
 | `careos_portal` | Implemented | `careos_communications`, `careos_finance`, `portal` | Patient portal at `/careos/portal` (home, appointments + requests, prescriptions, verified lab results, billing / pay now, messages), staff "View as patient" preview, portal invitations |
-| `careos` | Implemented | `careos_portal`, `careos_ai` | Meta module: 8-step setup guide, end-to-end browser tours |
+| `careos` | Implemented | `careos_portal`, `careos_ai` | Meta module: 8-step setup guide, end-to-end browser tours, security abuse suite |
+| `careos_demo` | Implemented | `careos` | Demo databases only: generators for the clinic day, queue, visits, prescriptions, lab, stock, invoices, messages, analytics history and the demo portal login |
 
 Dependency rule: domain modules depend "downwards" only. Cross-module UI integration goes through the
 registries and Python hooks, never through imports from a higher module.

@@ -25,7 +25,7 @@ Recorded deliberately so they do not derail vertical slices. None blocks the cur
 | Reception can start/complete consultations | Operational only while no clinical record exists; restrict to clinicians when `careos_clinical` creates encounters |
 | Doctors have no workspace yet | They land on Patients; the prototype's Doctor Workspace comes with the clinical slice |
 | Week view of the schedule | Day view only |
-| Demo schedule is relative to the install date | Re-seed with `_careos_demo_schedule()` / `_careos_demo_queue()` (see development.md) |
+| Demo schedule is relative to the install date | Re-seed with `_careos_demo_schedule()` / `_careos_demo_queue()` from `careos_demo` (see development.md) |
 | Walk-in patients | A walk-in is booked for "now" and checked in; no dedicated walk-in shortcut yet |
 
 ## From phase 3 (clinical -> portal)
