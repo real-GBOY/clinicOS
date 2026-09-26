@@ -1,7 +1,6 @@
 from odoo import _, api, fields, models
 from odoo.exceptions import AccessError, ValidationError
 
-from odoo.addons.careos_base.models.res_users import CAREOS_ROLES
 
 WEEKDAYS = [(6, "Sun"), (0, "Mon"), (1, "Tue"), (2, "Wed"), (3, "Thu"), (4, "Fri"), (5, "Sat")]
 INVITE_ROLES = ["reception", "doctor", "nurse", "lab", "pharmacy", "finance", "manager", "admin"]
@@ -144,18 +143,8 @@ class CareosSetup(models.AbstractModel):
     def _careos_invite(self, name, email, role):
         """Create a staff account with a CareOS role at the current branch
         and send the invitation e-mail (set-password link)."""
-        Users = self.env["res.users"].sudo()
-        if Users.with_context(active_test=False).search_count([("login", "=", email)]):
-            raise ValidationError(_("An account already exists for %s.", email))
         branch = self._careos_branch()
-        user = Users.with_context(no_reset_password=True).create({
-            "name": name, "login": email, "email": email,
-            "group_ids": [(6, 0, [self.env.ref(CAREOS_ROLES[role]).id])],
-            "careos_branch_ids": [(6, 0, branch.ids)], "careos_branch_id": branch.id,
-            "action_id": self.env.ref("careos_base.action_careos_app").id,
+        return self.env["careos.staff"]._careos_create_staff({
+            "name": name, "email": email, "roles": [role],
+            "branch_ids": branch.ids, "branch_id": branch.id,
         })
-        try:
-            user.action_reset_password()
-        except Exception:  # outgoing mail not configured: the account still exists
-            pass
-        return user

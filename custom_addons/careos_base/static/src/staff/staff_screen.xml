@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="careos_base.StaffScreen">
+        <div class="co-staff">
+            <div t-if="state.error and !state.data" class="co-card"><EmptyState title="'Staff unavailable'" body="state.error" error="true"/></div>
+            <LoadingState t-elif="!state.data" rows="6"/>
+            <t t-else="">
+                <PageHeader title="'Staff &amp; roles'" subtitle="'Who can sign in to CareOS and what each role may do'">
+                    <t t-set-slot="actions">
+                        <button t-if="state.data.can_manage" type="button" class="co-btn co-btn--primary" name="invite_staff"
+                                t-on-click="() => this.open()">+ Invite staff</button>
+                    </t>
+                </PageHeader>
+                <div class="co-metric-grid">
+                    <t t-foreach="state.data.kpis" t-as="kpi" t-key="kpi.key">
+                        <div class="co-card co-card--padded" t-att-data-kpi="kpi.key">
+                            <div t-attf-class="co-metric__label {{kpi.tone ? 'co-metric__label--' + kpi.tone : ''}}" t-esc="kpi.label"/>
+                            <div t-attf-class="co-metric__value {{kpi.tone ? 'co-metric__value--' + kpi.tone : ''}}" t-esc="kpi.value"/>
+                        </div>
+                    </t>
+                </div>
+                <div class="co-tabs co-staff__tabs" role="tablist">
+                    <button type="button" role="tab" data-tab="staff" t-attf-class="co-tabs__tab {{state.tab === 'staff' ? 'co-tabs__tab--active' : ''}}"
+                            t-att-aria-selected="state.tab === 'staff' ? 'true' : 'false'" t-on-click="() => this.state.tab = 'staff'">Staff</button>
+                    <button type="button" role="tab" data-tab="roles" t-attf-class="co-tabs__tab {{state.tab === 'roles' ? 'co-tabs__tab--active' : ''}}"
+                            t-att-aria-selected="state.tab === 'roles' ? 'true' : 'false'" t-on-click="() => this.state.tab = 'roles'">
+                        Roles &amp; permissions<span class="co-tabs__count" t-esc="state.data.roles.length"/>
+                    </button>
+                </div>
+
+                <t t-if="state.tab === 'staff'">
+                    <div class="co-directory-toolbar">
+                        <div class="co-search co-directory-toolbar__search">
+                            <span class="co-search__icon" aria-hidden="true">⌕</span>
+                            <input type="search" class="co-input" placeholder="Search name or e-mail" aria-label="Search staff"
+                                   t-att-value="state.query" t-on-input="onQuery"/>
+                        </div>
+                        <select class="co-select co-staff__role-filter" name="role_filter" aria-label="Role"
+                                t-on-change="(ev) => this.setRole(ev.target.value)">
+                            <option value="" t-att-selected="!state.role">All roles</option>
+                            <t t-foreach="state.data.roles" t-as="role" t-key="role.key">
+                                <option t-att-value="role.key" t-att-selected="state.role === role.key" t-esc="role.label"/>
+                            </t>
+                        </select>
+                        <div class="co-segmented" role="group" aria-label="Status">
+                            <t t-foreach="statusFilters" t-as="f" t-key="f[0]">
+                                <button type="button" t-attf-class="co-segmented__item {{state.status === f[0] ? 'co-segmented__item--active' : ''}}"
+                                        t-att-data-status="f[0]" t-on-click="() => this.setStatus(f[0])">
+                                    <t t-esc="f[1]"/><span t-if="f[0] and state.data.counts[f[0]]" class="co-tabs__count" t-esc="state.data.counts[f[0]]"/>
+                                </button>
+                            </t>
+                        </div>
+                    </div>
+                    <div t-if="!state.data.staff.length" class="co-card">
+                        <EmptyState title="'No staff here'" body="state.query or state.role ? 'Try another search or filter.' : 'Invited and active staff appear here.'"/>
+                    </div>
+                    <div t-else="" class="co-card co-table-scroll">
+                        <table class="co-table co-table--interactive">
+                            <thead><tr><th>Name</th><th>Roles</th><th class="co-hide-sm">Branches</th><th class="co-hide-md">Department</th><th class="co-hide-md">Last sign-in</th><th>Status</th></tr></thead>
+                            <tbody>
+                                <t t-foreach="state.data.staff" t-as="member" t-key="member.id">
+                                    <tr t-att-data-staff="member.login" tabindex="0" t-on-click="() => this.open(member)"
+                                        t-on-keydown="(ev) => ev.key === 'Enter' and this.open(member)">
+                                        <td>
+                                            <div class="co-staff__person">
+                                                <Avatar name="member.name"/>
+                                                <div>
+                                                    <div class="co-table__primary"><t t-esc="member.name"/><span t-if="member.is_self" class="co-staff__you"> (you)</span></div>
+                                                    <div class="co-table__sub" t-esc="member.email or member.login"/>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="co-staff__roles">
+                                                <t t-foreach="member.roles" t-as="role" t-key="role">
+                                                    <Badge label="roleLabels[role] or role" tone="role === 'admin' ? 'active' : 'info'"/>
+                                                </t>
+                                            </div>
+                                        </td>
+                                        <td class="co-hide-sm" t-esc="branchNames(member)"/>
+                                        <td class="co-hide-md" t-esc="member.department ? member.department.name : '—'"/>
+                                        <td class="co-hide-md" t-esc="lastLogin(member)"/>
+                                        <td><Badge label="statusBadge(member)[0]" tone="statusBadge(member)[1]"/></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+
+                <div t-else="" class="co-staff__role-grid">
+                    <div class="co-alert co-alert--info co-staff__role-note">
+                        Roles are fixed and enforced on the server for every record and action. Give someone several roles when they do several jobs.
+                    </div>
+                    <t t-foreach="state.data.roles" t-as="role" t-key="role.key">
+                        <div class="co-card co-card--padded co-staff__role" t-att-data-role="role.key">
+                            <div class="co-staff__role-head">
+                                <h3 class="co-staff__role-title" t-esc="role.label"/>
+                                <button type="button" class="co-btn co-btn--ghost co-btn--sm" t-att-name="'role_staff_' + role.key"
+                                        t-on-click="() => this.showRole(role)">
+                                    <t t-esc="role.count"/> <t t-esc="role.count === 1 ? 'person' : 'people'"/> →
+                                </button>
+                            </div>
+                            <p class="co-staff__role-desc" t-esc="role.description"/>
+                            <ul class="co-staff__caps">
+                                <t t-foreach="role.capabilities" t-as="cap" t-key="cap_index"><li t-esc="cap"/></t>
+                            </ul>
+                        </div>
+                    </t>
+                </div>
+            </t>
+        </div>
+    </t>
+
+    <t t-name="careos_base.StaffDialog">
+        <CareModal title="title" close="props.close" large="true">
+            <div t-if="state.loading" class="co-staff__loading">Loading…</div>
+            <form t-else="" class="co-form-grid co-staff__form" t-on-submit.prevent="save">
+                <div t-if="state.detail" class="co-staff__meta co-field--wide">
+                    <Badge label="statusBadge[0]" tone="statusBadge[1]"/>
+                    <span>Last sign-in: <t t-esc="lastLogin()"/></span>
+                </div>
+                <label class="co-field">
+                    <span class="co-field__label">Full name<span class="co-required">*</span></span>
+                    <input class="co-input" name="staff_name" t-model="state.name" t-att-disabled="readonly"/>
+                </label>
+                <label class="co-field">
+                    <span class="co-field__label">Work e-mail (sign-in)<span class="co-required">*</span></span>
+                    <input class="co-input" type="email" name="staff_email" t-model="state.email" t-att-disabled="readonly"/>
+                </label>
+
+                <fieldset class="co-field co-field--wide co-staff__fieldset">
+                    <legend class="co-field__label">Roles<span class="co-required">*</span></legend>
+                    <div class="co-staff__choices">
+                        <t t-foreach="props.overview.roles" t-as="role" t-key="role.key">
+                            <label t-attf-class="co-staff__choice {{state.roles.has(role.key) ? 'co-staff__choice--on' : ''}}">
+                                <input type="checkbox" t-att-name="'role_' + role.key" t-att-checked="state.roles.has(role.key)"
+                                       t-att-disabled="readonly" t-on-change="() => this.toggle(state.roles, role.key)"/>
+                                <span>
+                                    <span class="co-staff__choice-title" t-esc="role.label"/>
+                                    <span class="co-staff__choice-desc" t-esc="role.description"/>
+                                </span>
+                            </label>
+                        </t>
+                    </div>
+                </fieldset>
+
+                <fieldset class="co-field co-field--wide co-staff__fieldset">
+                    <legend class="co-field__label">Branches<span class="co-required">*</span></legend>
+                    <div class="co-staff__branches">
+                        <t t-foreach="props.overview.branches" t-as="branch" t-key="branch.id">
+                            <label class="co-staff__branch">
+                                <input type="checkbox" t-att-name="'branch_' + branch.id" t-att-checked="state.branchIds.has(branch.id)"
+                                       t-att-disabled="readonly" t-on-change="() => this.toggleBranch(branch.id)"/>
+                                <t t-esc="branch.name"/>
+                            </label>
+                        </t>
+                    </div>
+                </fieldset>
+                <label class="co-field">
+                    <span class="co-field__label">Default branch</span>
+                    <select class="co-select" name="staff_branch" t-att-disabled="readonly or !selectedBranches.length"
+                            t-on-change="(ev) => this.state.branchId = ev.target.value">
+                        <option value="" t-att-selected="!state.branchId">First selected branch</option>
+                        <t t-foreach="selectedBranches" t-as="branch" t-key="branch.id">
+                            <option t-att-value="branch.id" t-att-selected="'' + branch.id === state.branchId" t-esc="branch.name"/>
+                        </t>
+                    </select>
+                </label>
+                <label class="co-field">
+                    <span class="co-field__label">Department</span>
+                    <select class="co-select" name="staff_department" t-att-disabled="readonly or !departments.length"
+                            t-on-change="(ev) => this.state.departmentId = ev.target.value">
+                        <option value="" t-att-selected="!state.departmentId">None</option>
+                        <t t-foreach="departments" t-as="dept" t-key="dept.id">
+                            <option t-att-value="dept.id" t-att-selected="'' + dept.id === state.departmentId" t-esc="dept.name"/>
+                        </t>
+                    </select>
+                </label>
+
+                <div t-if="isNew" class="co-alert co-alert--info co-field--wide">
+                    They receive an e-mail with a link to set their own password. You never see or set it.
+                </div>
+                <div t-if="state.detail and state.detail.history.length" class="co-field co-field--wide">
+                    <span class="co-field__label">Access history</span>
+                    <ul class="co-staff__history">
+                        <t t-foreach="state.detail.history" t-as="entry" t-key="entry.id">
+                            <li>
+                                <span t-esc="entry.summary"/>
+                                <span class="co-staff__history-meta"><t t-esc="entry.actor"/> · <t t-esc="when(entry.date)"/></span>
+                            </li>
+                        </t>
+                    </ul>
+                </div>
+                <div t-if="state.error" class="co-alert co-alert--danger co-field--wide" role="alert" t-esc="state.error"/>
+                <button type="submit" class="d-none"/>
+            </form>
+            <t t-set-slot="footer">
+                <t t-if="state.detail and props.overview.can_manage and !state.detail.is_self">
+                    <button t-if="state.detail.status !== 'inactive'" type="button" class="co-btn co-btn--ghost co-staff__danger" name="deactivate_staff"
+                            t-att-disabled="state.saving" t-on-click="() => this.setActive(false)">Deactivate</button>
+                    <button t-else="" type="button" class="co-btn co-btn--secondary" name="reactivate_staff"
+                            t-att-disabled="state.saving" t-on-click="() => this.setActive(true)">Reactivate</button>
+                </t>
+                <button t-if="state.detail and props.overview.can_manage and state.detail.status === 'invited'" type="button"
+                        class="co-btn co-btn--secondary" name="resend_invite" t-att-disabled="state.saving" t-on-click="resend">Resend invitation</button>
+                <span class="co-staff__spacer"/>
+                <button type="button" class="co-btn co-btn--secondary" t-on-click="() => props.close()">
+                    <t t-esc="readonly ? 'Close' : 'Cancel'"/>
+                </button>
+                <button t-if="!readonly" type="button" class="co-btn co-btn--primary" name="save_staff"
+                        t-att-disabled="state.saving or !canSave" t-on-click="save">
+                    <t t-esc="isNew ? 'Send invitation' : 'Save changes'"/>
+                </button>
+            </t>
+        </CareModal>
+    </t>
+</templates>

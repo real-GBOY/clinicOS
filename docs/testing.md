@@ -27,6 +27,8 @@ MSYS_NO_PATHCONV=1 .venv/Scripts/python.exe odoo/odoo-bin -c odoo.conf -d careos
 | `careos_queue/tests/test_queue.py` | Check-in issues tickets, numbering per branch/day, check-in atomicity, no direct ticket edits, full queue flow and appointment sync, invalid queue transitions, board ordering, nurse/doctor/lab permissions, branch isolation, timeline events, dashboard queue metrics |
 | `careos_queue/tests/test_ui.py` + tour | Browser: dashboard → appointment → Patient 360 → check in → queue → call → start → complete → timeline → dashboard counts |
 | `careos_base/tests/test_notifications.py` | Own-only inbox, dedupe, mark read |
+| `careos_base/tests/test_staff.py` | Invite (roles, implied groups, branches, department, history), validation, role/branch edits keep other groups, plain-login accounts, self-protection, last-admin rule, deactivate/reactivate, filters/KPIs, manager read-only + branch scope, reception denied, log not writable |
+| `careos_base/tests/test_staff_ui.py` + tour | Browser: admin invites a receptionist, adds the nurse role, deactivates, checks the roles tab |
 | `careos_clinical/tests/test_clinical.py` | Encounter opened at check-in, vitals limits/BMI, nurse vitals-only, doctor-only diagnoses, sign-off rules, reception blocked from clinical data, doctor dashboard |
 | `careos_inventory/tests/test_inventory.py` | Receive with lots/expiry, status (low / expiring / ok), role checks, low-stock alert once |
 | `careos_prescriptions/tests/` | Lifecycle, allergy warnings, pharmacy notification, dispense consumes stock / blocks when short, course completion |

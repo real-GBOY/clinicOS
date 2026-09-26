@@ -96,6 +96,22 @@ patient IDs, phone, e-mail or national ID; free text is scrubbed). Output is lab
 "AI-GENERATED · REQUIRES REVIEW"; nothing reaches a chart until a clinician applies it, and every request,
 apply and dismiss is audited in `careos.ai.suggestion`.
 
+## Staff & roles (careos_base)
+
+| | Admin | Manager | Everyone else |
+|---|---|---|---|
+| See staff list, roles tab, access history | all staff | staff of own branches | - |
+| Invite, change roles/branches/department | ✓ | - | - |
+| Deactivate / reactivate, resend invitation | ✓ | - | - |
+
+Enforced in `careos.staff` (explicit role check before any `sudo`, manager rows limited to their branches).
+Safeguards: an admin cannot remove their own administrator role or deactivate themselves; CareOS always
+keeps at least one active administrator; every staff member keeps at least one role and one branch
+(remove access by deactivating, which keeps the audit trail). Only CareOS role groups are added or removed;
+other Odoo groups on the user are untouched. Passwords are never set by an admin: invitations send
+Odoo's set-password link. Every change is written to `careos.staff.log` (who, whom, what, when), which
+nobody can create or edit directly. Odoo's internal system account is never listed.
+
 ## Record rules
 
 All CareOS models carry `company_id` and a multi-company rule (`company_id in company_ids`). Appointments

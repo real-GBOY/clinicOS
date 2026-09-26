@@ -677,3 +677,11 @@
 }
 .co-metric__delta--up { color: var(--careos-success-soft-text); }
 .co-metric__delta--down { color: var(--careos-danger-soft-text); }
+
+/* ---------- Responsive helpers ---------- */
+@media (max-width: 1200px) {
+    .co-hide-md { display: none; }
+}
+@media (max-width: 600px) {
+    .co-hide-sm { display: none; }
+}

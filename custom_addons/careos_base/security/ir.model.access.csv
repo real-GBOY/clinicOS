@@ -6,3 +6,4 @@ access_careos_department_user,careos.department staff,model_careos_department,gr
 access_careos_department_admin,careos.department admin,model_careos_department,group_careos_admin,1,1,1,0
 access_careos_department_system,careos.department system,model_careos_department,base.group_system,1,1,1,1
 access_careos_notification_user,careos.notification user,model_careos_notification,group_careos_user,1,1,0,0
+access_careos_staff_log_admin,careos.staff.log admin,model_careos_staff_log,group_careos_admin,1,0,0,0

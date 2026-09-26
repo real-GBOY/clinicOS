@@ -2,7 +2,7 @@
 
 | Module | Status | Depends on | Owns |
 |---|---|---|---|
-| `careos_base` | Implemented | `web`, `mail` | Branches, departments, role groups, user branch context, design tokens + components, application shell, global search framework |
+| `careos_base` | Implemented | `web`, `mail`, `auth_signup` | Branches, departments, role groups, user branch context, design tokens + components, application shell, global search framework, notifications, Staff & roles (invite, roles, branches, deactivate, access history) |
 | `careos_patients` | Implemented | `careos_base` | Patient registry, contacts, allergies, conditions, Patient Directory, Patient 360, patient search provider |
 | `careos_appointments` | Implemented | `careos_patients` | Providers, rooms, visit types, appointment lifecycle, conflict-free booking, Appointments workspace (schedule + list), appointment detail, reception dashboard, Patient 360 appointments tab + next-appointment card, appointment search |
 | `careos_queue` | Implemented | `careos_appointments` | Queue tickets issued at check-in, queue lifecycle mirrored from appointments, live queue board, queue panel + Waiting metric on the reception dashboard, "Patient called" timeline events |

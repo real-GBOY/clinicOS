@@ -8,7 +8,7 @@ Recorded deliberately so they do not derail vertical slices. None blocks the cur
 |---|---|
 | Odoo navbar can flash during the very first load | Hidden as soon as the CareOS shell mounts; a fullscreen-at-boot web client patch would remove it entirely |
 | Odoo-branded login page | Needs a CareOS login template |
-| Admin configuration uses standard Odoo list/form views | Branches, departments, providers, rooms, visit types — until a CareOS settings workspace exists |
+| Admin configuration uses standard Odoo list/form views | Branches, departments, providers, rooms, visit types (staff and roles now have the CareOS Staff & roles screen) |
 | Fonts loaded from Google Fonts | Bundle locally for offline and privacy-sensitive deployments |
 | Selects have no custom caret | Native select styling |
 | No CareOS date-picker component | Native date input |
@@ -39,3 +39,5 @@ Recorded deliberately so they do not derail vertical slices. None blocks the cur
 | Polling instead of the bus | Notifications, queue and dashboards poll |
 | Cash journal | Charts without a cash journal fall back to the bank journal; the chosen method is kept in the payment memo |
 | Portal booking is a request | Creates a draft appointment that reception confirms |
+| "Invited" means "never signed in" | Accounts created before the Staff screen (e.g. demo users) show as invited until their first sign-in |
+| Linking a doctor account to a provider | Done from the setup guide or provider configuration, not yet from Staff & roles |

@@ -13,7 +13,7 @@ global search).
     "category": "CareOS",
     "author": "JINX",
     "license": "LGPL-3",
-    "depends": ["web", "mail"],
+    "depends": ["web", "mail", "auth_signup"],
     "data": [
         "security/careos_security.xml",
         "security/ir.model.access.csv",
@@ -34,6 +34,10 @@ global search).
             "careos_base/static/src/components/**/*",
             "careos_base/static/src/search/**/*",
             "careos_base/static/src/shell/**/*",
+            "careos_base/static/src/staff/**/*",
+        ],
+        "web.assets_tests": [
+            "careos_base/static/tests/tours/**/*",
         ],
     },
     "application": True,
