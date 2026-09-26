@@ -8,6 +8,9 @@ Odoo supplies the engine (ORM, security, accounting, stock, mail, portal). CareO
 domain model and a purpose-built, full-screen web app for each role. Staff never see the generic Odoo
 back office.
 
+> 📘 **Want the full picture?** Read the [CareOS Product Book](CareOS-Product.md): every role, screen, flow,
+> rule, permission, data model, limitation and the roadmap in one document.
+
 ![Reception dashboard](docs/screenshots/reception-dashboard.png)
 
 ---
@@ -348,6 +351,7 @@ The full list is in [docs/backlog.md](docs/backlog.md).
 
 | Document | Covers |
 |---|---|
+| [CareOS-Product.md](CareOS-Product.md) | The complete product book: roles, features, flows, permissions, data model, roadmap |
 | [docs/architecture.md](docs/architecture.md) | Design sources, platform decisions, resolved design conflicts |
 | [docs/modules.md](docs/modules.md) | Every module, its dependencies, and the extension points between them |
 | [docs/domain-model.md](docs/domain-model.md) | Models, fields and state machines |
