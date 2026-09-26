@@ -5,7 +5,7 @@ All CareOS tests are tagged `careos` and run post-install.
 ```bash
 # Git Bash: MSYS_NO_PATHCONV=1 stops "/careos_base" being rewritten as a Windows path
 MSYS_NO_PATHCONV=1 .venv/Scripts/python.exe odoo/odoo-bin -c odoo.conf -d careos_test \
-  -i careos --test-enable --test-tags /careos_base,/careos_patients,/careos_appointments,/careos_queue,/careos_clinical,/careos_inventory,/careos_prescriptions,/careos_laboratory,/careos_finance,/careos_communications,/careos_analytics,/careos_ai,/careos_portal,/careos \
+  -i careos,careos_demo --test-enable --test-tags /careos_base,/careos_patients,/careos_appointments,/careos_queue,/careos_clinical,/careos_inventory,/careos_prescriptions,/careos_laboratory,/careos_finance,/careos_communications,/careos_analytics,/careos_ai,/careos_portal,/careos \
   --http-port 8079 --log-level=test
 ```
 
@@ -39,7 +39,14 @@ MSYS_NO_PATHCONV=1 .venv/Scripts/python.exe odoo/odoo-bin -c odoo.conf -d careos
 | `careos_ai/tests/` | Disabled by default, admin-only config, de-identified context, apply requires review, audit (model call mocked) |
 | `careos_portal/tests/` | Portal sees only own data, verified results only, message, reschedule, booking request, staff preview |
 | `careos/tests/test_setup.py` | Setup guide steps and admin-only access |
+| `careos/tests/test_security_abuse.py` | Attacks the backend directly: front desk on the clinical record, nurse beyond vitals, another doctor's record ids, forged states on every workflow, other-branch ids, role escalation (invite/save admin, own groups, setup, AI config, audit log), restricted fields, payment amounts and refunds, pharmacy/stock/lab steps, portal id guessing and crafted booking arguments, AI suggestions of another user; over real JSON-RPC: private methods, role limits, portal routes, anonymous calls |
 | `careos/tests/test_ui.py` + tours | Browser: doctor visit (vitals, notes, diagnosis, prescription, lab, sign-off); patient portal (message, book) |
+
+## Continuous integration
+
+`.github/workflows/tests.yml` runs the command above on every push and pull request (Ubuntu, PostgreSQL 16,
+Odoo 19 checkout, headless Chrome for the tours) and uploads the log. The job fails on any failure or if the
+suite did not run.
 
 ## Notes
 

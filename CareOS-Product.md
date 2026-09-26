@@ -48,7 +48,7 @@ missing, and where it goes next. It describes the product as it is implemented t
 | **Platform** | Odoo 19 (Python 3.12, PostgreSQL, OWL web framework) |
 | **Users** | Reception, doctors, nurses, lab technicians, pharmacists, finance, managers, administrators, patients |
 | **Delivery** | 14 Odoo modules; the `careos` meta module installs the full suite |
-| **Status** | Feature-complete against the product prototype; 180 automated tests passing |
+| **Status** | Feature-complete against the product prototype; 196 automated tests passing in CI |
 | **License** | LGPL-3.0 (as declared in the module manifests) |
 | **Repository** | https://github.com/real-GBOY/clinicOS |
 
@@ -775,6 +775,7 @@ Duplicate notifications are suppressed with a dedupe key (for example "Low stock
 | `careos_ai` | careos_analytics (+ `anthropic`) | AI assistant, de-identification, audit |
 | `careos_portal` | careos_communications, careos_finance, portal | Patient portal, staff preview, portal invitations |
 | `careos` | careos_portal, careos_ai | Meta module: full suite and setup guide |
+| `careos_demo` | careos | Demo databases only: clinic day and eight weeks of history via the real workflows |
 
 ---
 
@@ -782,6 +783,10 @@ Duplicate notifications are suppressed with a dedupe key (for example "Low stock
 
 - **Server-side enforcement:** access rules, record rules, field restrictions and workflow role checks
   (section 9).
+- **Authorization pipeline:** every public method validates its arguments, resolves records in the
+  caller's scope, checks the role through one shared helper, enforces business rules, and only then uses
+  elevated access. See `docs/architecture.md` (Architecture governance).
+- **Security abuse tests** attack the backend directly on every CI run (section 20).
 - **Multi-company and multi-branch isolation:** staff see only their company and branches, doctors only
   their own schedule, patients only their own record.
 - **Audit trail:**
@@ -838,7 +843,7 @@ Then sign in as administrator, complete the **Setup guide** and invite staff fro
 
 **Demo database:**
 ```bash
-python odoo/odoo-bin -c odoo.conf -d careos_demo --with-demo -i careos --stop-after-init
+python odoo/odoo-bin -c odoo.conf -d careos_demo --with-demo -i careos,careos_demo --stop-after-init
 ```
 
 ### Production checklist
@@ -883,7 +888,7 @@ python odoo/odoo-bin -c odoo.conf -d careos_demo --with-demo -i careos --stop-af
 
 ## 20. Quality and testing
 
-- **180 automated tests**, all passing on a fresh database.
+- **196 automated tests**, all passing on a fresh database, run by **GitHub Actions on every push**.
 - **Browser tours (headless Chrome):**
   - patient registration;
   - booking from Patient 360;
@@ -900,10 +905,14 @@ python odoo/odoo-bin -c odoo.conf -d careos_demo --with-demo -i careos --stop-af
   - notifications and deduplication, reminder scheduling and failure handling;
   - AI disabled by default, de-identification, review-before-apply, audit (model calls mocked);
   - staff safeguards (self-protection, last administrator, audit log not writable).
+- **Security abuse suite:** assumes the frontend does not exist and attacks the backend directly:
+  other doctors' and branches' record ids, forged workflow states, role escalation, restricted fields,
+  invalid payment amounts, portal id guessing and crafted booking arguments, private methods and
+  anonymous calls over real JSON-RPC.
 - Date-dependent tests run on a frozen clock.
 
 ```bash
-python odoo/odoo-bin -c odoo.conf -d careos_ci --with-demo -i careos --test-enable \
+python odoo/odoo-bin -c odoo.conf -d careos_ci --with-demo -i careos,careos_demo --test-enable \
   --test-tags /careos_base,/careos_patients,/careos_appointments,/careos_queue,/careos_clinical,/careos_inventory,/careos_prescriptions,/careos_laboratory,/careos_finance,/careos_communications,/careos_analytics,/careos_ai,/careos_portal,/careos \
   --http-port 8079 --stop-after-init --log-level=test
 ```
@@ -933,26 +942,25 @@ python odoo/odoo-bin -c odoo.conf -d careos_ci --with-demo -i careos --test-enab
 ## 22. Roadmap
 
 **Now: foundation for real clinics**
-1. Continuous integration: run the full test suite on every push.
-2. **Arabic with right-to-left layout** across the staff app and the portal.
-3. **Egyptian payments** (Paymob / Fawry) for "Pay now"; **SMS / WhatsApp reminders** through a local
+1. **Arabic with right-to-left layout** across the staff app and the portal.
+2. **Egyptian payments** (Paymob / Fawry) for "Pay now"; **SMS / WhatsApp reminders** through a local
    provider.
-4. Production deployment: Linux, HTTPS, workers, automated backups, monitoring.
+3. Production deployment: Linux, HTTPS, workers, automated backups, monitoring.
 
 **Next: pilot learnings**
-5. Pilot with one clinic for 2–4 weeks and prioritise from real usage.
-6. Push updates instead of timer refresh (Odoo bus) for the queue, dashboards and notifications.
-7. Per-doctor schedules: rotas, leave, breaks, slot templates.
-8. A read-access audit log, and field-level restriction of national ID and insurance.
-9. CareOS screens for rooms, visit types and providers; doctor-to-account linking in Staff & roles.
+4. Pilot with one clinic for 2–4 weeks and prioritise from real usage.
+5. Push updates instead of timer refresh (Odoo bus) for the queue, dashboards and notifications.
+6. Per-doctor schedules: rotas, leave, breaks, slot templates.
+7. A read-access audit log, and field-level restriction of national ID and insurance.
+8. CareOS screens for rooms, visit types and providers; doctor-to-account linking in Staff & roles.
 
 **Later: growth**
-10. Insurance claims and pre-approvals.
-11. Doctor fees and commissions.
-12. Pharmacy counter sales and supplier purchase orders.
-13. Imaging / radiology orders.
-14. Patient mobile app on top of the portal.
-15. Standards-based integrations (HL7 FHIR, LOINC codes for lab tests).
+9. Insurance claims and pre-approvals.
+10. Doctor fees and commissions.
+11. Pharmacy counter sales and supplier purchase orders.
+12. Imaging / radiology orders.
+13. Patient mobile app on top of the portal.
+14. Standards-based integrations (HL7 FHIR, LOINC codes for lab tests).
 
 ---
 

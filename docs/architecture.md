@@ -72,3 +72,98 @@ and are visible at all its branches; operational records (appointments, queue) w
 ## Module map
 
 See [modules.md](modules.md).
+
+## Architecture governance
+
+These rules keep the architecture coherent as CareOS grows. Reviews check new code against them.
+
+### 1. Layers and dependencies
+
+```
+OWL screens (registries)  →  public careos_* methods / portal controllers
+   →  authorization (ACL · record rules · field groups · require_role)
+   →  domain models (own their state and invariants)
+   →  domain services (orchestrate across models)
+   →  native Odoo (account.move, stock, mail, portal)
+```
+
+* Modules depend **downward only**. A higher module plugs into a lower one through a registry (UI) or an
+  overridable hook (Python); a lower module never imports a higher one.
+* Use Odoo's objects wherever they fit (invoices, payments, reversals, stock quants, lots, pickings,
+  mail, portal). A parallel CareOS model needs a written reason.
+
+### 2. Authorization pipeline
+
+Every public `careos_*` method and every controller treats its arguments as hostile, because it can be
+called over RPC with any values. The order is fixed:
+
+1. **Odoo access rights and record rules** apply automatically to non-sudo reads and writes.
+2. **Validate arguments** and resolve records **in the caller's scope** (`browse(...)` +
+   `check_access`, `has_access`, or a scoped search). Never trust an id, a state or an amount from the
+   client. The portal resolves the patient from the logged-in user and never accepts a patient id.
+3. **Role check** with `require_role(env, ROLES, message)` from `careos_base.models.authorization`, only
+   when the operation is role-specific. Role sets live in the domain module that owns the operation
+   (`BILL_ROLES`, `TRANSITIONS[...]`), but they are always evaluated through `has_role` / `require_role`.
+   Never write ad-hoc `has_group` chains.
+4. **Business invariants**: state machine, validations, amounts.
+5. **`sudo()` last**, and only for the narrow read or write that needs it after steps 1–4 passed. A
+   record found with `sudo()` is returned to the caller only if the caller `has_access` to it.
+
+`env.su` (internal jobs, demo loading) passes role checks; Odoo system administrators count as CareOS
+administrators.
+
+### 3. Services orchestrate, models own invariants
+
+* A **domain model** owns its state machine, validations and per-record logic
+  (`account.move._careos_status()`, `careos.appointment._careos_billable_lines()`,
+  `careos.encounter.action_complete()`).
+* A **service** (`careos.billing`, `careos.inventory`, `careos.staff`, `careos.portal`, `careos.ai`,
+  `careos.analytics`, `careos.setup`) authorizes, then orchestrates several models for one use case.
+  It does not re-implement a model's rules.
+* Warning signs that a service is becoming a "god layer": it computes a record's status, it has
+  `if record.state == ...` branches that belong in the model, or it keeps growing unrelated methods.
+  Move that logic onto the model.
+
+### 4. Registry governance
+
+Create a JS registry **only when a higher module must extend a lower module's surface** (for example
+laboratory adding a panel to the clinical doctor workspace). A component used by its own module stays
+local. Each registry has one owner and a documented entry shape. The current set:
+
+| Registry | Owner | Extended by |
+|---|---|---|
+| `careos.screens`, `careos.dashboards`, `careos.topbar_items`, `careos.sidebar_actions` | careos_base | every module with a screen; ai and portal (topbar, sidebar) |
+| `careos.patient_tabs`, `careos.patient_overview_cards` | careos_patients | appointments, clinical, lab, prescriptions, finance, communications, portal |
+| `careos.reception_dashboard_panels`, `careos.appointment_sections` | careos_appointments | queue, clinical, finance |
+| `careos.queue_ticket_actions` | careos_queue | clinical |
+| `careos.encounter_sections`, `careos.encounter_actions`, `careos.doctor_dashboard_panels` | careos_clinical | prescriptions, laboratory |
+
+A new registry is added to this table in the same change.
+
+### 5. Integration boundary
+
+* **Internal** browser ↔ server calls use the ORM (`orm.call` → public `careos_*` methods) and HTTP
+  controllers declared with `@http.route(type="jsonrpc")` (portal).
+* **External systems** (payment providers, SMS/WhatsApp, labs, insurers, FHIR) connect through a
+  dedicated adapter module per integration, built on Odoo's **External JSON-2 API** or on the
+  provider's own SDK. Do not build new integrations on the legacy external `/xmlrpc` and `/jsonrpc`
+  endpoints: Odoo 19 deprecates them, with removal scheduled for Odoo 22.
+* Secrets (API keys, provider credentials) live in `ir.config_parameter` or `odoo.conf`, never in code.
+
+### 6. Demo data
+
+* **Static demo records** (branches, users, patients, providers, rooms) stay in each module's `demo/`
+  folder, as usual in Odoo.
+* **Generators** that simulate clinic activity live only in the `careos_demo` module, which is installed
+  on demo databases (`--with-demo -i careos,careos_demo`) and never in production.
+
+### 7. Tests as a gate
+
+A change is done when the full suite passes on a fresh database. Every feature adds:
+
+* model and state-machine tests;
+* the role matrix, both allowed **and** refused;
+* branch and company isolation;
+* abuse cases in `careos/tests/test_security_abuse.py` for any new public method: forged ids, other
+  branches, forged states, restricted fields, invalid amounts, and portal id guessing;
+* a browser tour for a new main flow.
