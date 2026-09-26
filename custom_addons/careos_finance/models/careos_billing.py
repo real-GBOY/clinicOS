@@ -60,6 +60,56 @@ class AccountMove(models.Model):
     careos_branch_id = fields.Many2one("careos.branch", index=True, readonly=True)
     careos_appointment_id = fields.Many2one("careos.appointment", index=True, readonly=True, string="Visit")
 
+    # The invoice owns its CareOS status and summary; the billing service only
+    # authorizes and orchestrates.
+
+    def _careos_status(self):
+        """(key, label, tone) of the CareOS invoice status."""
+        self.ensure_one()
+        today = fields.Date.context_today(self)
+        if self.state == "draft":
+            return "draft", _("Draft"), "neutral"
+        if self.state == "cancel":
+            return "cancelled", _("Cancelled"), "neutral"
+        if self.payment_state == "reversed":
+            return "refunded", _("Refunded"), "neutral"
+        if self.payment_state in ("paid", "in_payment"):
+            return "paid", _("Paid"), "success"
+        if self.payment_state == "partial":
+            return "partial", _("Partially paid"), "warning"
+        if self.invoice_date_due and self.invoice_date_due < today:
+            return "overdue", _("Overdue"), "danger"
+        return "pending", _("Pending"), "neutral"
+
+    def _careos_summary(self):
+        self.ensure_one()
+        key, label, tone = self._careos_status()
+        return {
+            "id": self.id,
+            "name": self.name if self.name and self.name != "/" else _("Draft invoice"),
+            "date": fields.Date.to_string(self.invoice_date) if self.invoice_date else False,
+            "due": fields.Date.to_string(self.invoice_date_due) if self.invoice_date_due else False,
+            "patient": {"id": self.careos_patient_id.id, "name": self.careos_patient_id.name},
+            "total": self.amount_total,
+            "paid": self.amount_total - self.amount_residual if self.state == "posted" else 0.0,
+            "balance": self.amount_residual if self.state == "posted" else self.amount_total,
+            "currency": self.currency_id.symbol,
+            "status": key,
+            "status_label": label,
+            "tone": tone,
+        }
+
+    def _careos_payment_history(self):
+        self.ensure_one()
+        if self.state != "posted":
+            return []
+        return [{
+            "date": fields.Date.to_string(payment.date),
+            # Method recorded in the memo ("INV/… · Card"); journal name otherwise.
+            "method": payment.memo.split(" · ")[-1] if payment.memo and " · " in payment.memo else payment.journal_id.name,
+            "amount": payment.amount,
+        } for payment in self._get_reconciled_payments()]
+
 
 class AccountMoveLine(models.Model):
     _inherit = "account.move.line"
@@ -67,6 +117,41 @@ class AccountMoveLine(models.Model):
     careos_appointment_id = fields.Many2one("careos.appointment", index=True, readonly=True)
     careos_lab_order_id = fields.Many2one("careos.lab.order", index=True, readonly=True)
     careos_prescription_line_id = fields.Many2one("careos.prescription.line", index=True, readonly=True)
+
+
+class CareosAppointment(models.Model):
+    _inherit = "careos.appointment"
+
+    def _careos_billable_lines(self):
+        """Invoice line values for everything delivered in the visit and not
+        billed yet: the consultation, lab tests, dispensed medicines."""
+        self.ensure_one()
+        appointment = self.sudo()
+        Line = self.env["account.move.line"].sudo()
+        encounters = appointment.encounter_ids
+        billed = Line.search([("parent_state", "!=", "cancel"), "|", "|",
+                              ("careos_appointment_id", "=", appointment.id),
+                              ("careos_lab_order_id", "in", encounters.lab_order_ids.ids),
+                              ("careos_prescription_line_id", "in", encounters.prescription_ids.line_ids.ids)])
+        lines = []
+        if appointment.state == "done" and appointment not in billed.careos_appointment_id:
+            product = appointment.type_id.product_id
+            if not product:
+                appointment.type_id._careos_ensure_product()
+                product = appointment.type_id.product_id
+            lines.append({"product_id": product.id, "name": _("Consultation — %s", appointment.type_id.name),
+                          "quantity": 1, "price_unit": product.list_price, "careos_appointment_id": appointment.id})
+        for order in encounters.lab_order_ids:
+            if order not in billed.careos_lab_order_id:
+                for test in order.test_ids:
+                    lines.append({"product_id": test.product_id.id, "name": _("%s (Lab)", test.name), "quantity": 1,
+                                  "price_unit": test.product_id.list_price, "careos_lab_order_id": order.id})
+        for rx_line in encounters.prescription_ids.filtered(lambda rx: rx.state in ("dispensed", "completed")).line_ids:
+            if rx_line not in billed.careos_prescription_line_id:
+                lines.append({"product_id": rx_line.product_id.id, "name": rx_line.product_id.name,
+                              "quantity": rx_line.quantity, "price_unit": rx_line.product_id.list_price,
+                              "careos_prescription_line_id": rx_line.id})
+        return lines
 
 
 class CareosBilling(models.AbstractModel):
@@ -116,37 +201,6 @@ class CareosBilling(models.AbstractModel):
     # ------------------------------------------------------------------
 
     @api.model
-    def _careos_billable_lines(self, appointment):
-        """Invoice line values for everything delivered in the visit and not
-        billed yet: the consultation, lab tests, dispensed medicines."""
-        appointment = appointment.sudo()
-        Line = self.env["account.move.line"].sudo()
-        billed = Line.search([("parent_state", "!=", "cancel"), "|", "|",
-                              ("careos_appointment_id", "=", appointment.id),
-                              ("careos_lab_order_id", "in", appointment.encounter_ids.lab_order_ids.ids),
-                              ("careos_prescription_line_id", "in", appointment.encounter_ids.prescription_ids.line_ids.ids)])
-        lines = []
-        if appointment.state == "done" and appointment not in billed.careos_appointment_id:
-            product = appointment.type_id.product_id
-            if not product:
-                appointment.type_id._careos_ensure_product()
-                product = appointment.type_id.product_id
-            lines.append({"product_id": product.id, "name": _("Consultation — %s", appointment.type_id.name),
-                          "quantity": 1, "price_unit": product.list_price, "careos_appointment_id": appointment.id})
-        for order in appointment.encounter_ids.lab_order_ids:
-            if order not in billed.careos_lab_order_id:
-                for test in order.test_ids:
-                    lines.append({"product_id": test.product_id.id, "name": _("%s (Lab)", test.name), "quantity": 1,
-                                  "price_unit": test.product_id.list_price, "careos_lab_order_id": order.id})
-        for rx_line in appointment.encounter_ids.prescription_ids.filtered(
-                lambda rx: rx.state in ("dispensed", "completed")).line_ids:
-            if rx_line not in billed.careos_prescription_line_id:
-                lines.append({"product_id": rx_line.product_id.id, "name": rx_line.product_id.name,
-                              "quantity": rx_line.quantity, "price_unit": rx_line.product_id.list_price,
-                              "careos_prescription_line_id": rx_line.id})
-        return lines
-
-    @api.model
     def careos_visit_billing(self, appointment_id):
         """Billing card on the appointment: its invoices and what is left to bill."""
         self._careos_require(VIEW_ROLES)
@@ -154,9 +208,9 @@ class CareosBilling(models.AbstractModel):
         appointment.check_access("read")
         moves = self.env["account.move"].sudo().search([("careos_appointment_id", "=", appointment.id),
                                                         ("move_type", "=", "out_invoice")])
-        pending = self._careos_billable_lines(appointment)
+        pending = appointment._careos_billable_lines()
         return {
-            "invoices": [self._careos_summary(m) for m in moves],
+            "invoices": [m._careos_summary() for m in moves],
             "pending": [{"name": line["name"], "quantity": line["quantity"], "amount": line["quantity"] * line["price_unit"]}
                         for line in pending],
             "pending_total": sum(line["quantity"] * line["price_unit"] for line in pending),
@@ -170,7 +224,7 @@ class CareosBilling(models.AbstractModel):
         self._careos_require(BILL_ROLES)
         appointment = self.env["careos.appointment"].browse(appointment_id)
         appointment.check_access("read")
-        lines = self._careos_billable_lines(appointment)
+        lines = appointment._careos_billable_lines()
         if not lines:
             raise UserError(_("Nothing left to bill for this visit."))
         patient = appointment.patient_id
@@ -252,59 +306,17 @@ class CareosBilling(models.AbstractModel):
     # ------------------------------------------------------------------
 
     @api.model
-    def _careos_status(self, move):
-        today = fields.Date.context_today(self)
-        if move.state == "draft":
-            return "draft", _("Draft"), "neutral"
-        if move.state == "cancel":
-            return "cancelled", _("Cancelled"), "neutral"
-        if move.payment_state == "reversed":
-            return "refunded", _("Refunded"), "neutral"
-        if move.payment_state in ("paid", "in_payment"):
-            return "paid", _("Paid"), "success"
-        if move.payment_state == "partial":
-            return "partial", _("Partially paid"), "warning"
-        if move.invoice_date_due and move.invoice_date_due < today:
-            return "overdue", _("Overdue"), "danger"
-        return "pending", _("Pending"), "neutral"
-
-    @api.model
-    def _careos_summary(self, move):
-        key, label, tone = self._careos_status(move)
-        return {
-            "id": move.id,
-            "name": move.name if move.name and move.name != "/" else _("Draft invoice"),
-            "date": fields.Date.to_string(move.invoice_date) if move.invoice_date else False,
-            "due": fields.Date.to_string(move.invoice_date_due) if move.invoice_date_due else False,
-            "patient": {"id": move.careos_patient_id.id, "name": move.careos_patient_id.name},
-            "total": move.amount_total,
-            "paid": move.amount_total - move.amount_residual if move.state == "posted" else 0.0,
-            "balance": move.amount_residual if move.state == "posted" else move.amount_total,
-            "currency": move.currency_id.symbol,
-            "status": key,
-            "status_label": label,
-            "tone": tone,
-        }
-
-    @api.model
     def careos_invoice_detail(self, move_id):
         move = self._careos_move(move_id)
         can_bill = has_role(self.env, BILL_ROLES)
-        summary = self._careos_summary(move)
-        payments = [{
-            "date": fields.Date.to_string(payment.date),
-            # Method recorded in the memo ("INV/… · Card"); journal name otherwise.
-            "method": payment.memo.split(" · ")[-1] if payment.memo and " · " in payment.memo else payment.journal_id.name,
-            "amount": payment.amount,
-        } for payment in (move._get_reconciled_payments() if move.state == "posted" else [])]
         return {
-            **summary,
+            **move._careos_summary(),
             "appointment_id": move.careos_appointment_id.id or False,
             "branch": move.careos_branch_id.name,
             "lines": [{
                 "id": line.id, "service": line.name, "qty": line.quantity, "unit": line.price_unit, "total": line.price_total,
             } for line in move.invoice_line_ids],
-            "payments": payments,
+            "payments": move._careos_payment_history(),
             "can_post": can_bill and move.state == "draft",
             "can_pay": can_bill and move.state == "posted" and move.payment_state in ("not_paid", "partial"),
             "can_refund": has_role(self.env, REFUND_ROLES) and move.state == "posted"
@@ -324,7 +336,7 @@ class CareosBilling(models.AbstractModel):
         if (query or "").strip():
             domain += ["|", ("name", "ilike", query.strip()), ("careos_patient_id.name", "ilike", query.strip())]
         moves = self.env["account.move"].sudo().search(domain, order="invoice_date desc, id desc", limit=limit)
-        rows = [self._careos_summary(m) for m in moves]
+        rows = [m._careos_summary() for m in moves]
         if status:
             rows = [r for r in rows if r["status"] == status or (status == "unpaid" and r["status"] in ("pending", "partial", "overdue"))]
         return rows
@@ -334,7 +346,7 @@ class CareosBilling(models.AbstractModel):
         self._careos_require(VIEW_ROLES)
         patient = self.env["careos.patient"].browse(patient_id)
         patient.check_access("read")
-        return [self._careos_summary(m) for m in self._careos_patient_moves(patient)]
+        return [m._careos_summary() for m in self._careos_patient_moves(patient)]
 
     @api.model
     def _careos_cron_overdue(self):
